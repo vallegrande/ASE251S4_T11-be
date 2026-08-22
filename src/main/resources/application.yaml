@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: ASE251S4_T11-be
+  data:
+    mongodb:
+      uri: mongodb+srv://brandoflores_db_user:e2iOpvB3lPUdvda6@cluster0.pofa1rg.mongodb.net/agrimarket
+      connection-string: mongodb+srv://brandoflores_db_user:e2iOpvB3lPUdvda6@cluster0.pofa1rg.mongodb.net/agrimarket
+      database: agrimarket
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+
+agrimarket:
+  mongodb:
+    connection-string: mongodb+srv://brandoflores_db_user:e2iOpvB3lPUdvda6@cluster0.pofa1rg.mongodb.net/agrimarket
+    database: agrimarket
+
+server:
+  port: 8080
