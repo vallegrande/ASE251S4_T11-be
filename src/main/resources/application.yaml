@@ -3,8 +3,8 @@ spring:
     name: ASE251S4_T11-be
   data:
     mongodb:
-      uri: mongodb+srv://brandoflores_db_user:e2iOpvB3lPUdvda6@cluster0.pofa1rg.mongodb.net/agrimarket
-      connection-string: mongodb+srv://brandoflores_db_user:e2iOpvB3lPUdvda6@cluster0.pofa1rg.mongodb.net/agrimarket
+      uri: mongodb+srv://gianherrera_db_user:vZSohpapGRtE7sNP@cluster0.0dvnx1x.mongodb.net/agrimarket
+      connection-string: mongodb+srv://gianherrera_db_user:vZSohpapGRtE7sNP@cluster0.0dvnx1x.mongodb.net/agrimarket
       database: agrimarket
   autoconfigure:
     exclude:
@@ -12,7 +12,7 @@ spring:
 
 agrimarket:
   mongodb:
-    connection-string: mongodb+srv://brandoflores_db_user:e2iOpvB3lPUdvda6@cluster0.pofa1rg.mongodb.net/agrimarket
+    connection-string: mongodb+srv://gianherrera_db_user:vZSohpapGRtE7sNP@cluster0.0dvnx1x.mongodb.net/agrimarket
     database: agrimarket
 
 server:
