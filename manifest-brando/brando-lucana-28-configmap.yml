@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: brando-lucana-agrimarket-be
+data:
+  SERVER_PORT: "8080"
+  SPRING_APPLICATION_NAME: "ASE251S4_T11-be"
