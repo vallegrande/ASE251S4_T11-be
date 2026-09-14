@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gian-herrera-11-deployment
+  namespace: gian-herrera-11-namespace
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gian-herrera-11-deployment
+  template:
+    metadata:
+      labels:
+        app: gian-herrera-11-deployment
+    spec:
+      containers:
+      - name: gian-herrera-11-container
+        image: gianherrerasaavedra/springwebflux-mongodb:1.0
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080   # 🔑 puerto interno de tu app
+        envFrom:
+        - secretRef:
+            name: gian-herrera-11-secret
+        - configMapRef:
+            name: gian-herrera-11-configmap

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gian-herrera-11-configmap
+  namespace: gian-herrera-11-namespace
+data:
+  MONGO_DATABASE: database_cloud
+  MONGO_URI: mongodb+srv://gianherrera_db_user:vZSohpapGRtE7sNP@cluster0.0dvnx1x.mongodb.net/?appName=Cluster0
+  SERVER_PORT: "8080"
