@@ -1,0 +1,17 @@
+# ==========================================================
+# Plantilla de configuración LOCAL - COPIAR y RENOMBRAR a:
+#   application-local.yml  (dentro de src/main/resources/)
+# O establecer estas variables como variables de entorno OS.
+# ==========================================================
+# NUNCA subas el archivo "aplication-local.yml" a Git.
+# El .gitignore ya incluye application-local.yml.
+
+# --- MongoDB Atlas (Brando o de Gian,en todo caso mano lo pegas como comentario tu URI de tu custer xd ) ---
+MONGODB_URI: "mongodb+srv://brandoflores_db_user:e2iOpvB3lPUdvda6@cluster0.pofa1rg.mongodb.net/"
+
+# --- SQL Server Local (Docker) ---
+SQLSERVER_HOST: "localhost"
+SQLSERVER_PORT: "1433"
+SQLSERVER_USER: "sa"
+SQLSERVER_PASSWORD: "Sql12345678!"
+SQLSERVER_DATABASE: "Agrimarket"

@@ -1,8 +1,8 @@
 package com.agrimarket.demo.service;
 
 import com.agrimarket.demo.exception.ResourceNotFoundException;
-import com.agrimarket.demo.model.Supplier;
-import com.agrimarket.demo.repository.SupplierRepository;
+import com.agrimarket.demo.model.mongo.Supplier;
+import com.agrimarket.demo.repository.mongo.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -34,17 +34,18 @@ public class SupplierServiceImpl implements SupplierService {
 
     @Override
     public Mono<Supplier> create(Supplier supplier) {
-        return sequenceGeneratorService.generateSequence("suppliers_sequence")
-                .flatMap(seq -> {
-                    supplier.setId(seq);
+        return sequenceGeneratorService.generateSequence(Supplier.SEQUENCE_NAME)
+                .map(id -> {
                     LocalDateTime now = LocalDateTime.now();
+                    supplier.setId(id);
                     supplier.setCreatedAt(now);
                     supplier.setUpdatedAt(now);
                     if (supplier.getIsActive() == null) {
                         supplier.setIsActive(true);
                     }
-                    return supplierRepository.save(supplier);
-                });
+                    return supplier;
+                })
+                .flatMap(supplierRepository::save);
     }
 
     @Override
@@ -61,7 +62,7 @@ public class SupplierServiceImpl implements SupplierService {
                     existing.setAddress(supplier.getAddress());
                     existing.setUbigeo(supplier.getUbigeo());
                     existing.setContactPerson(supplier.getContactPerson());
-                    existing.setIsActive(supplier.getIsActive());
+                    existing.setIsActive(supplier.getIsActive() != null ? supplier.getIsActive() : existing.getIsActive());
                     existing.setUpdatedAt(LocalDateTime.now());
                     return supplierRepository.save(existing);
                 });

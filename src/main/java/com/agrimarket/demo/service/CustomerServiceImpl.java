@@ -1,8 +1,8 @@
 package com.agrimarket.demo.service;
 
 import com.agrimarket.demo.exception.ResourceNotFoundException;
-import com.agrimarket.demo.model.Customer;
-import com.agrimarket.demo.repository.CustomerRepository;
+import com.agrimarket.demo.model.mongo.Customer;
+import com.agrimarket.demo.repository.mongo.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

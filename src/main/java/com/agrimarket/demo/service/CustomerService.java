@@ -1,6 +1,6 @@
 package com.agrimarket.demo.service;
 
-import com.agrimarket.demo.model.Customer;
+import com.agrimarket.demo.model.mongo.Customer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

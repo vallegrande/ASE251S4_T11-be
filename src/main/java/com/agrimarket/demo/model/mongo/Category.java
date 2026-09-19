@@ -1,4 +1,4 @@
-package com.agrimarket.demo.model;
+package com.agrimarket.demo.model.mongo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,27 +9,22 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Document(collection = "suppliers")
+@Document(collection = "categories")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Supplier {
+public class Category {
 
     @Id
     private Long id;
 
-    private String supplierCode;
-    private String businessName;
-    private String docType;
-    private String docNumber;
-    private String phone;
-    private String email;
-    private String address;
-
-    private Ubigeo ubigeo;
-
-    private String contactPerson;
+    private String categoryName;
+    private Long parentCategoryId;
+    private String description;
+    private Integer level;
+    private String code;
+    private Integer orderDisplay;
 
     @Builder.Default
     private Boolean isActive = true;

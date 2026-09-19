@@ -1,6 +1,6 @@
 package com.agrimarket.demo.rest;
 
-import com.agrimarket.demo.model.Supplier;
+import com.agrimarket.demo.model.mongo.Supplier;
 import com.agrimarket.demo.service.SupplierService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

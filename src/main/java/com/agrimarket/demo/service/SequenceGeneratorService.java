@@ -1,6 +1,6 @@
 package com.agrimarket.demo.service;
 
-import com.agrimarket.demo.model.Counter;
+import com.agrimarket.demo.model.mongo.Counter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.ReactiveMongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;

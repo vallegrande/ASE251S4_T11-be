@@ -6,6 +6,10 @@ spring:
       uri: ${MONGODB_URI}
       connection-string: ${MONGODB_URI}
       database: ${MONGODB_DATABASE:Agrimarket}
+  r2dbc:
+    url: r2dbc:mssql://${SQLSERVER_HOST}:${SQLSERVER_PORT}/${SQLSERVER_DATABASE:Agrimarket}?encrypt=false&trustServerCertificate=true
+    username: ${SQLSERVER_USER}
+    password: ${SQLSERVER_PASSWORD}
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration

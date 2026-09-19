@@ -1,4 +1,4 @@
-package com.agrimarket.demo.model;
+package com.agrimarket.demo.model.mongo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.agrimarket.demo.model;
+package com.agrimarket.demo.model.mongo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,15 +7,17 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "counters")
+@Document(collection = "ubigeos")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Counter {
+public class Ubigeo {
 
     @Id
-    private String id;
+    private Long id;
 
-    private Long seq;
+    private String department;
+    private String province;
+    private String district;
 }
