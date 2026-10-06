@@ -55,7 +55,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     @Override
     public Mono<PurchaseOrderWithDetailsDTO> create(CreatePurchaseOrderRequest req) {
         return validateCreate(req)
-                .flatMap(ignored -> {
+                .then(Mono.defer(() -> {
                     LocalDateTime now = LocalDateTime.now();
                     PurchaseOrder po = PurchaseOrder.builder()
                             .purchaseOrderDate(req.purchaseOrderDate())
@@ -80,7 +80,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                             });
 
                     return flow.as(transactionalOperator::transactional);
-                });
+                }));
     }
 
     @Override
@@ -88,7 +88,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         return purchaseOrderRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("PurchaseOrder no encontrado con id: " + id)))
                 .flatMap(existingPo -> validateUpdate(req)
-                        .flatMap(ignored -> {
+                        .then(Mono.defer(() -> {
                             LocalDateTime now = LocalDateTime.now();
                             existingPo.setPurchaseOrderDate(req.purchaseOrderDate());
                             existingPo.setStatus(req.status());
@@ -113,7 +113,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                                     });
 
                             return flow.as(transactionalOperator::transactional);
-                        })
+                        }))
                 );
     }
 

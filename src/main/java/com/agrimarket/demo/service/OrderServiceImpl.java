@@ -55,7 +55,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Mono<OrderWithDetailsDTO> create(CreateOrderRequest req) {
         return validateCreateOrderRequest(req)
-                .flatMap(ignored -> {
+                .then(Mono.defer(() -> {
                     LocalDateTime now = LocalDateTime.now();
                     Order order = Order.builder()
                             .orderDate(req.getOrderDate())
@@ -78,7 +78,7 @@ public class OrderServiceImpl implements OrderService {
                                     .map(details -> OrderWithDetailsDTO.from(savedOrder, details)));
 
                     return transactionalOperator.transactional(flow);
-                });
+                }));
     }
 
     @Override
@@ -86,7 +86,7 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Order no encontrado con id: " + id)))
                 .flatMap(existingOrder -> validateUpdateOrderRequest(req)
-                        .flatMap(ignored -> {
+                        .then(Mono.defer(() -> {
                             existingOrder.setOrderDate(req.getOrderDate());
                             existingOrder.setStatus(req.getStatus());
                             existingOrder.setDeliveryType(req.getDeliveryType());
@@ -109,7 +109,7 @@ public class OrderServiceImpl implements OrderService {
                                             .map(details -> OrderWithDetailsDTO.from(savedOrder, details)));
 
                             return transactionalOperator.transactional(flow);
-                        })
+                        }))
                 );
     }
 
