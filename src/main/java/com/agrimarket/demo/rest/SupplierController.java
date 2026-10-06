@@ -21,11 +21,6 @@ public class SupplierController {
         return supplierService.findAll();
     }
 
-    @GetMapping("/status/{isActive}")
-    public Flux<Supplier> findByStatus(@PathVariable Boolean isActive) {
-        return supplierService.findByStatus(isActive);
-    }
-
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Supplier>> findById(@PathVariable Long id) {
         return supplierService.findById(id)
@@ -36,24 +31,5 @@ public class SupplierController {
     @PostMapping
     public Mono<Supplier> create(@Valid @RequestBody Supplier supplier) {
         return supplierService.create(supplier);
-    }
-
-    @PutMapping("/{id}")
-    public Mono<Supplier> update(@PathVariable Long id, @Valid @RequestBody Supplier supplier) {
-        return supplierService.update(id, supplier);
-    }
-
-    @PatchMapping("/{id}/delete")
-    public Mono<ResponseEntity<Supplier>> logicalDelete(@PathVariable Long id) {
-        return supplierService.logicalDelete(id)
-                .map(ResponseEntity::ok)
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
-    }
-
-    @PatchMapping("/{id}/restore")
-    public Mono<ResponseEntity<Supplier>> restore(@PathVariable Long id) {
-        return supplierService.restore(id)
-                .map(ResponseEntity::ok)
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 }

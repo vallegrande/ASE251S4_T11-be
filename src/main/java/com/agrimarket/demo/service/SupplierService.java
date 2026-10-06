@@ -8,15 +8,7 @@ public interface SupplierService {
 
     Flux<Supplier> findAll();
 
-    Flux<Supplier> findByStatus(Boolean isActive);
-
     Mono<Supplier> findById(Long id);
 
     Mono<Supplier> create(Supplier supplier);
-
-    Mono<Supplier> update(Long id, Supplier supplier);
-
-    Mono<Supplier> logicalDelete(Long id);
-
-    Mono<Supplier> restore(Long id);
 }

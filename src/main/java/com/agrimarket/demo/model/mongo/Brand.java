@@ -1,5 +1,7 @@
 package com.agrimarket.demo.model.mongo;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +21,8 @@ public class Brand {
     @Id
     private Long id;
 
+    @NotBlank(message = "brandName es obligatorio")
+    @Size(max = 150, message = "brandName no puede superar 150 caracteres")
     private String brandName;
 
     @Builder.Default

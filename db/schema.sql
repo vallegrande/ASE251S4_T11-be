@@ -1,3 +1,4 @@
+create database agrimarket;
 USE Agrimarket;
 GO
 

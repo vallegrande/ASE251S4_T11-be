@@ -4,6 +4,7 @@ import com.agrimarket.demo.dto.CreateOrderRequest;
 import com.agrimarket.demo.dto.OrderWithDetailsDTO;
 import com.agrimarket.demo.dto.UpdateOrderRequest;
 import com.agrimarket.demo.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,12 +31,12 @@ public class OrderController {
     }
 
     @PostMapping
-    public Mono<OrderWithDetailsDTO> create(@RequestBody CreateOrderRequest req) {
+    public Mono<OrderWithDetailsDTO> create(@Valid @RequestBody CreateOrderRequest req) {
         return orderService.create(req);
     }
 
     @PutMapping("/{id}")
-    public Mono<OrderWithDetailsDTO> update(@PathVariable Integer id, @RequestBody UpdateOrderRequest req) {
+    public Mono<OrderWithDetailsDTO> update(@PathVariable Integer id, @Valid @RequestBody UpdateOrderRequest req) {
         return orderService.update(id, req);
     }
 }

@@ -55,7 +55,6 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Customer no encontrado con id: " + id)))
                 .flatMap(existing -> {
-                    existing.setCustomerCode(customer.getCustomerCode());
                     existing.setDocType(customer.getDocType());
                     existing.setDocNumber(customer.getDocNumber());
                     existing.setFirstName(customer.getFirstName());

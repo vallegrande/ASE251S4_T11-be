@@ -1,6 +1,5 @@
 package com.agrimarket.demo.service;
 
-import com.agrimarket.demo.exception.ResourceNotFoundException;
 import com.agrimarket.demo.model.mongo.Supplier;
 import com.agrimarket.demo.repository.mongo.SupplierRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +22,6 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    public Flux<Supplier> findByStatus(Boolean isActive) {
-        return supplierRepository.findByIsActive(isActive);
-    }
-
-    @Override
     public Mono<Supplier> findById(Long id) {
         return supplierRepository.findById(id);
     }
@@ -46,49 +40,5 @@ public class SupplierServiceImpl implements SupplierService {
                     return supplier;
                 })
                 .flatMap(supplierRepository::save);
-    }
-
-    @Override
-    public Mono<Supplier> update(Long id, Supplier supplier) {
-        return supplierRepository.findById(id)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Supplier no encontrado con id: " + id)))
-                .flatMap(existing -> {
-                    existing.setSupplierCode(supplier.getSupplierCode());
-                    existing.setBusinessName(supplier.getBusinessName());
-                    existing.setDocType(supplier.getDocType());
-                    existing.setDocNumber(supplier.getDocNumber());
-                    existing.setPhone(supplier.getPhone());
-                    existing.setEmail(supplier.getEmail());
-                    existing.setAddress(supplier.getAddress());
-                    existing.setUbigeo(supplier.getUbigeo());
-                    existing.setContactPerson(supplier.getContactPerson());
-                    existing.setIsActive(supplier.getIsActive() != null ? supplier.getIsActive() : existing.getIsActive());
-                    existing.setUpdatedAt(LocalDateTime.now());
-                    return supplierRepository.save(existing);
-                });
-    }
-
-    @Override
-    public Mono<Supplier> logicalDelete(Long id) {
-        return supplierRepository.findById(id)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Supplier no encontrado con id: " + id)))
-                .flatMap(existing -> {
-                    existing.setIsActive(false);
-                    existing.setDeletedAt(LocalDateTime.now());
-                    existing.setUpdatedAt(LocalDateTime.now());
-                    return supplierRepository.save(existing);
-                });
-    }
-
-    @Override
-    public Mono<Supplier> restore(Long id) {
-        return supplierRepository.findById(id)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Supplier no encontrado con id: " + id)))
-                .flatMap(existing -> {
-                    existing.setIsActive(true);
-                    existing.setRestoredAt(LocalDateTime.now());
-                    existing.setUpdatedAt(LocalDateTime.now());
-                    return supplierRepository.save(existing);
-                });
     }
 }
