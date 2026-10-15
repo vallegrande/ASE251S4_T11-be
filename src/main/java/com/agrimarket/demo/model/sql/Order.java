@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -28,6 +29,8 @@ public class Order {
     private BigDecimal totalAmount;
     private Integer storeId;
     private String customerId;
+    @Column("checkout_key")
+    private String checkoutKey;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

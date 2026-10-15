@@ -1,5 +1,6 @@
 package com.agrimarket.demo.model.mongo;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +18,12 @@ public class Ubigeo {
     @Id
     private Long id;
 
+    @NotBlank
     private String department;
+
+    @NotBlank
     private String province;
+
+    @NotBlank
     private String district;
 }

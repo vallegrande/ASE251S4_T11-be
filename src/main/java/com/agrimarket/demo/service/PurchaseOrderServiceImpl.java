@@ -3,22 +3,27 @@ package com.agrimarket.demo.service;
 import com.agrimarket.demo.dto.CreatePurchaseOrderRequest;
 import com.agrimarket.demo.dto.PurchaseOrderItemDTO;
 import com.agrimarket.demo.dto.PurchaseOrderWithDetailsDTO;
+import com.agrimarket.demo.dto.StatusUpdateRequest;
 import com.agrimarket.demo.dto.UpdatePurchaseOrderRequest;
 import com.agrimarket.demo.exception.ResourceNotFoundException;
 import com.agrimarket.demo.model.sql.PurchaseOrder;
 import com.agrimarket.demo.model.sql.PurchaseOrderDetail;
+import com.agrimarket.demo.model.sql.PurchaseOrderStatus;
 import com.agrimarket.demo.repository.mongo.ProductRepository;
 import com.agrimarket.demo.repository.mongo.SupplierRepository;
 import com.agrimarket.demo.repository.sql.PurchaseOrderDetailRepository;
 import com.agrimarket.demo.repository.sql.PurchaseOrderRepository;
 import com.agrimarket.demo.repository.sql.StoreRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +36,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     private final SupplierRepository supplierRepository;
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
+    private final InventoryService inventoryService;
     private final TransactionalOperator transactionalOperator;
 
     @Override
@@ -54,13 +60,14 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Override
     public Mono<PurchaseOrderWithDetailsDTO> create(CreatePurchaseOrderRequest req) {
-        return validateCreate(req)
+        return validateInitialStatus(req.status())
+                .then(validateCreate(req))
                 .then(Mono.defer(() -> {
                     LocalDateTime now = LocalDateTime.now();
                     PurchaseOrder po = PurchaseOrder.builder()
                             .purchaseOrderDate(req.purchaseOrderDate())
-                            .status(req.status())
-                            .totalAmount(req.totalAmount())
+                            .status("PENDING")
+                            .totalAmount(calculateTotal(req.items()))
                             .supplierId(req.supplierId())
                             .storeId(req.storeId())
                             .notes(req.notes())
@@ -87,12 +94,13 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     public Mono<PurchaseOrderWithDetailsDTO> update(Integer id, UpdatePurchaseOrderRequest req) {
         return purchaseOrderRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("PurchaseOrder no encontrado con id: " + id)))
-                .flatMap(existingPo -> validateUpdate(req)
+                .flatMap(existingPo -> validateEditable(existingPo)
+                        .then(validateUpdateStatus(req.status()))
+                        .then(validateUpdate(req))
                         .then(Mono.defer(() -> {
                             LocalDateTime now = LocalDateTime.now();
                             existingPo.setPurchaseOrderDate(req.purchaseOrderDate());
-                            existingPo.setStatus(req.status());
-                            existingPo.setTotalAmount(req.totalAmount());
+                            existingPo.setTotalAmount(calculateTotal(req.items()));
                             existingPo.setSupplierId(req.supplierId());
                             existingPo.setStoreId(req.storeId());
                             existingPo.setNotes(req.notes());
@@ -115,6 +123,89 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                             return flow.as(transactionalOperator::transactional);
                         }))
                 );
+    }
+
+    @Override
+    public Mono<PurchaseOrderWithDetailsDTO> updateStatus(Integer id, StatusUpdateRequest req) {
+        PurchaseOrderStatus nextStatus;
+        try {
+            nextStatus = PurchaseOrderStatus.valueOf(req.status().trim().toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            return Mono.error(new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "status debe ser uno de: " + List.of(PurchaseOrderStatus.values())));
+        }
+
+        Mono<PurchaseOrderWithDetailsDTO> flow = purchaseOrderRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException(
+                        "PurchaseOrder no encontrado con id: " + id)))
+                .flatMap(order -> {
+                    if (nextStatus.name().equals(order.getStatus())) {
+                        return findByIdWithDetails(id);
+                    }
+                    if (!PurchaseOrderStatus.PENDING.name().equalsIgnoreCase(order.getStatus())) {
+                        return Mono.error(new ResponseStatusException(
+                                HttpStatus.CONFLICT,
+                                "Solo una orden PENDING puede cambiar a RECEIVED o CANCELLED"));
+                    }
+                    Mono<Void> receiveStock;
+                    if (PurchaseOrderStatus.RECEIVED == nextStatus) {
+                        if (order.getStoreId() == null) {
+                            return Mono.error(new ResponseStatusException(
+                                    HttpStatus.BAD_REQUEST,
+                                    "La orden necesita storeId para recibir el inventario"));
+                        }
+                        receiveStock = purchaseOrderDetailRepository
+                                .findByPurchaseOrderId(id)
+                                .concatMap(item -> inventoryService.increaseStock(
+                                        item.getProductId(), order.getStoreId(), item.getQuantity()))
+                                .then();
+                    } else {
+                        receiveStock = Mono.empty();
+                    }
+                    return receiveStock.then(Mono.defer(() -> {
+                        order.setStatus(nextStatus.name());
+                        order.setUpdatedAt(LocalDateTime.now());
+                        return purchaseOrderRepository.save(order)
+                                .flatMap(saved -> purchaseOrderDetailRepository.findByPurchaseOrderId(id)
+                                        .collectList()
+                                        .map(items -> buildDTO(saved, items)));
+                    }));
+                });
+        return flow.as(transactionalOperator::transactional);
+    }
+
+    private Mono<Void> validateInitialStatus(String status) {
+        if (!PurchaseOrderStatus.PENDING.name().equalsIgnoreCase(status.trim())) {
+            return Mono.error(new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Una orden nueva debe iniciar con status PENDING"));
+        }
+        return Mono.empty();
+    }
+
+    private Mono<Void> validateEditable(PurchaseOrder order) {
+        if (!PurchaseOrderStatus.PENDING.name().equalsIgnoreCase(order.getStatus())) {
+            return Mono.error(new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Solo se puede editar una orden de compra PENDING"));
+        }
+        return Mono.empty();
+    }
+
+    private Mono<Void> validateUpdateStatus(String status) {
+        if (!PurchaseOrderStatus.PENDING.name().equalsIgnoreCase(status.trim())) {
+            return Mono.error(new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Usa PATCH /api/purchase-orders/{id}/status para cambiar el estado"));
+        }
+        return Mono.empty();
+    }
+
+    private BigDecimal calculateTotal(List<PurchaseOrderItemDTO> items) {
+        return items.stream()
+                .map(item -> item.unitPrice().multiply(BigDecimal.valueOf(item.quantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private Mono<Void> validateCreate(CreatePurchaseOrderRequest req) {

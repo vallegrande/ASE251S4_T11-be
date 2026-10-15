@@ -1,5 +1,6 @@
 package com.agrimarket.demo.model.mongo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,12 +11,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Document(collection = "customers")
+@CompoundIndex(name = "ux_customer_document", def = "{'docType': 1, 'docNumber': 1}", unique = true)
 @Data
 @Builder
 @NoArgsConstructor
@@ -44,6 +48,7 @@ public class Customer {
     @NotBlank(message = "email es obligatorio")
     @Email(message = "email debe ser válido")
     @Size(max = 255, message = "email no puede superar los 255 caracteres")
+    @Indexed(unique = true)
     private String email;
 
     @Size(max = 50, message = "phone no puede superar los 50 caracteres")
@@ -55,6 +60,7 @@ public class Customer {
     private Ubigeo ubigeo;
 
     @Size(max = 255, message = "password no puede superar los 255 caracteres")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @PositiveOrZero(message = "totalVisits debe ser >= 0")

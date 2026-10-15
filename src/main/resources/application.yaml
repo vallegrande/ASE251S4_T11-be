@@ -6,6 +6,7 @@ spring:
       uri: ${MONGODB_URI}
       connection-string: ${MONGODB_URI}
       database: ${MONGODB_DATABASE:Agrimarket}
+      auto-index-creation: true
   r2dbc:
     url: r2dbc:mssql://${SQLSERVER_HOST}:${SQLSERVER_PORT}/${SQLSERVER_DATABASE:Agrimarket}?encrypt=false&trustServerCertificate=true
     username: ${SQLSERVER_USER}
@@ -18,6 +19,9 @@ agrimarket:
   mongodb:
     connection-string: ${MONGODB_URI}
     database: ${MONGODB_DATABASE:Agrimarket}
+  security:
+    auth-token:
+      expiration-ms: ${AUTH_TOKEN_EXPIRATION_MS:86400000}
 
 server:
   port: ${SERVER_PORT:8080}

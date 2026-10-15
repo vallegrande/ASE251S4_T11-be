@@ -33,6 +33,9 @@ public class Store {
     @Column("ubigeo_id")
     private Integer ubigeoId;
 
+    @Column("is_active")
+    private Boolean isActive;
+
     @Column("created_at")
     private LocalDateTime createdAt;
 

@@ -2,6 +2,7 @@ package com.agrimarket.demo.rest;
 
 import com.agrimarket.demo.dto.CreatePurchaseOrderRequest;
 import com.agrimarket.demo.dto.PurchaseOrderWithDetailsDTO;
+import com.agrimarket.demo.dto.StatusUpdateRequest;
 import com.agrimarket.demo.dto.UpdatePurchaseOrderRequest;
 import com.agrimarket.demo.service.PurchaseOrderService;
 import jakarta.validation.Valid;
@@ -38,5 +39,13 @@ public class PurchaseOrderController {
     @PutMapping("/{id}")
     public Mono<PurchaseOrderWithDetailsDTO> update(@PathVariable Integer id, @Valid @RequestBody UpdatePurchaseOrderRequest req) {
         return purchaseOrderService.update(id, req);
+    }
+
+    // ADMIN/VENDEDOR: recibe o cancela una compra; al recibirla, suma sus cantidades al inventario.
+    @PatchMapping("/{id}/status")
+    public Mono<PurchaseOrderWithDetailsDTO> updateStatus(
+            @PathVariable Integer id,
+            @Valid @RequestBody StatusUpdateRequest req) {
+        return purchaseOrderService.updateStatus(id, req);
     }
 }
