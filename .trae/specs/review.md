@@ -3,6 +3,27 @@
 $env:SPRING_PROFILES_ACTIVE = "local"
 mvn spring-boot:run
 
+En Postman, abre POST http://localhost:8080/api/staff-users.
+En Authorization, selecciona Bearer Token y pega el valor token que te devolvió el login.
+Envía un body como este. La contraseña la eliges tú; no hace falta generar una clave aleatoria:
+
+registrar a un ADMIN
+{
+  "email": "vendedor@ejemplo.com",
+  "password": "MiClaveDePrueba123",
+  "firstName": "Vendedor",
+  "lastName": "Prueba",
+  "role": "VENDEDOR",
+  "isActive": true
+}
+
+loguearse con el usuario ADMIN
+
+{
+  "email": "vendedor@ejemplo.com",
+  "password": "MiClaveDePrueba123"
+}
+
 ## Revisor: Implementador (auto-review asistida + verificación estática)
 Fecha: 2026-09-18
 

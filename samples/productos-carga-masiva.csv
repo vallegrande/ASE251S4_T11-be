@@ -1,0 +1,16 @@
+name,sku,activeIngredient,presentation,basePrice,categoryId,brandId,description,imageUrl,isActive
+Paracetamol 500mg,PAR-500,PARACETAMOL,Tableta x 10,3.50,1,1,Analgesico y antipiretico de venta libre,https://cdn.agrimarket.pe/paracetamol.png,true
+Ibuprofeno 400mg,IBU-400,IBUPROFENO,Tableta x 10,4.20,1,1,Antiinflamatorio no esteroideo,https://cdn.agrimarket.pe/ibuprofeno.png,true
+Amoxicilina 500mg,AMO-500,AMOXICILINA,Capsula x 12,12.90,2,2,Antibiotico de amplio espectro,https://cdn.agrimarket.pe/amoxicilina.png,true
+Vitamina C 1g,VITC-1000,ACIDO ASCORBICO,Efervescente x 10,8.75,3,3,Suplemento antioxidante e inmunologico,https://cdn.agrimarket.pe/vitaminac.png,true
+Omeprazol 20mg,OME-20,OMEPRAZOL,Capsula x 14,9.40,2,2,Inhibidor de la bomba de protones,https://cdn.agrimarket.pe/omeprazol.png,true
+Loratadina 10mg,LOR-10,LORATADINA,Tableta x 10,5.10,1,4,Antihistaminico para alergias,https://cdn.agrimarket.pe/loratadina.png,true
+Diclofenaco gel 1%,DIC-GEL,DICLOFENACO SÓDICO,Gel 60g,14.30,4,1,Antiinflamatorio topico para dolores musculares,https://cdn.agrimarket.pe/diclofenaco.png,true
+Suero oral rehidratante,SUE-ORAL,SALES DE REHIDRATACION,Sobre x 1,2.30,3,4,Hidratacion para cuadros de deshidratacion,https://cdn.agrimarket.pe/suero.png,true
+Alcohol 96 1L,ALC-96,ALCOHOL ETILICO,Solucion 1L,10.50,5,5,Antiseptico de uso externo,https://cdn.agrimarket.pe/alcohol.png,true
+Gasas esteriles 10x10,GAS-10,GASA ESTERIL,Paquete x 10,6.80,5,5,Material de curacion esteril,https://cdn.agrimarket.pe/gasas.png,true
+Metformina 850mg,MET-850,METFORMINA,Tableta x 30,11.20,6,2,Antidiabetico oral,https://cdn.agrimarket.pe/metformina.png,true
+Losartan 50mg,LOS-50,LOSARTAN POTASICO,Tableta x 30,13.60,6,2,Antihipertensivo,https://cdn.agrimarket.pe/losartan.png,true
+Protector solar SPF50,PROT-50,OXIDO DE ZINC,Crema 120ml,32.90,4,6,Fotoproteccion de amplio espectro,https://cdn.agrimarket.pe/protector.png,true
+Termometro digital,TER-DIG,,Unidad,25.00,7,6,Termometro digital de uso domestico,https://cdn.agrimarket.pe/termometro.png,true
+Mascarilla KN95,MAS-KN95,,Caja x 20,18.40,5,6,Mascarilla de proteccion respiratoria,https://cdn.agrimarket.pe/mascarilla.png,false

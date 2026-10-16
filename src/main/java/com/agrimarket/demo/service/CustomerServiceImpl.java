@@ -1,9 +1,17 @@
 package com.agrimarket.demo.service;
 
+import com.agrimarket.demo.dto.BulkImportResult;
 import com.agrimarket.demo.exception.ResourceNotFoundException;
 import com.agrimarket.demo.model.mongo.Customer;
+import com.agrimarket.demo.model.mongo.Ubigeo;
 import com.agrimarket.demo.repository.mongo.CustomerRepository;
 import com.agrimarket.demo.repository.mongo.StaffUserRepository;
+import com.agrimarket.demo.util.ExcelGenerator;
+import com.agrimarket.demo.util.PdfGenerator;
+import com.agrimarket.demo.util.TabularFileReader;
+import com.agrimarket.demo.util.ValueParser;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,10 +19,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +39,13 @@ public class CustomerServiceImpl implements CustomerService {
     private final StaffUserRepository staffUserRepository;
     private final SequenceGeneratorService sequenceGeneratorService;
     private final PasswordEncoder passwordEncoder;
+    private final Validator validator;
+
+    private static final String DEFAULT_IMPORT_PASSWORD = "Importado2025.";
+    private static final String[] EXPORT_HEADERS = {
+            "id", "docType", "docNumber", "firstName", "lastName", "email",
+            "phone", "address", "department", "province", "district", "customerSince", "isActive"
+    };
 
     @Override
     public Flux<Customer> findAll() {
@@ -161,5 +183,161 @@ public class CustomerServiceImpl implements CustomerService {
                     existing.setUpdatedAt(LocalDateTime.now());
                     return customerRepository.save(existing);
                 });
+    }
+
+    // ------------------------------------------------------------------
+    // Carga masiva (importacion) y exportacion
+    // ------------------------------------------------------------------
+
+    @Override
+    public Mono<BulkImportResult> importCustomers(byte[] content, String filename) {
+        return Mono.fromCallable(() -> TabularFileReader.read(content, filename))
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMapMany(Flux::fromIterable)
+                .index()
+                .concatMap(tuple -> processRow((int) (tuple.getT1() + 2L), tuple.getT2()))
+                .collectList()
+                .map(this::buildResult);
+    }
+
+    private Mono<Optional<BulkImportResult.RowError>> processRow(int rowNumber, Map<String, String> row) {
+        Customer customer;
+        try {
+            customer = mapRow(row);
+        } catch (IllegalArgumentException ex) {
+            return Mono.just(Optional.of(rowError(rowNumber, ex.getMessage())));
+        }
+        return create(customer)
+                .map(saved -> Optional.<BulkImportResult.RowError>empty())
+                .onErrorResume(ex -> Mono.just(Optional.of(rowError(rowNumber, reason(ex)))));
+    }
+
+    private Customer mapRow(Map<String, String> row) {
+        String docType = ValueParser.required(row, "docType", "doctype", "tipodocumento");
+        String docNumber = ValueParser.required(row, "docNumber", "docnumber", "numerodocumento");
+        String firstName = ValueParser.required(row, "firstName", "firstname", "nombres");
+        String lastName = ValueParser.required(row, "lastName", "lastname", "apellidos");
+        String email = ValueParser.required(row, "email", "email", "correo");
+
+        Customer.CustomerBuilder builder = Customer.builder()
+                .docType(docType)
+                .docNumber(docNumber)
+                .firstName(firstName)
+                .lastName(lastName)
+                .email(email)
+                .phone(ValueParser.value(row, "phone", "telefono"))
+                .address(ValueParser.value(row, "address", "direccion"))
+                .ubigeo(mapUbigeo(row))
+                .password(password(row))
+                .totalVisits(ValueParser.parseInteger(
+                        ValueParser.value(row, "totalvisits", "totalvisitas"), 0))
+                .lastPurchaseDate(ValueParser.parseDate(
+                        ValueParser.value(row, "lastpurchasedate", "ultimacompra")))
+                .customerSince(defaultCustomerSince(row))
+                .notes(ValueParser.value(row, "notes", "notas", "observaciones"))
+                .isActive(ValueParser.parseBoolean(ValueParser.value(row, "isactive", "activo"), Boolean.TRUE));
+
+        Customer customer = builder.build();
+        validate(customer);
+        return customer;
+    }
+
+    private Ubigeo mapUbigeo(Map<String, String> row) {
+        String department = ValueParser.value(row, "department", "departamento");
+        String province = ValueParser.value(row, "province", "provincia");
+        String district = ValueParser.value(row, "district", "distrito");
+        boolean any = department != null || province != null || district != null;
+        if (!any) {
+            return null;
+        }
+        if (department == null || province == null || district == null) {
+            throw new IllegalArgumentException(
+                    "Si registra ubigeo debe completar department, province y district");
+        }
+        return Ubigeo.builder().department(department).province(province).district(district).build();
+    }
+
+    private String password(Map<String, String> row) {
+        String value = ValueParser.value(row, "password", "clave", "contrasena", "contraseña");
+        return value == null ? DEFAULT_IMPORT_PASSWORD : value;
+    }
+
+    private LocalDate defaultCustomerSince(Map<String, String> row) {
+        LocalDate parsed = ValueParser.parseDate(ValueParser.value(row, "customersince", "clientedesde"));
+        return parsed != null ? parsed : LocalDate.now();
+    }
+
+    private void validate(Customer customer) {
+        Set<ConstraintViolation<Customer>> violations = validator.validate(customer);
+        if (!violations.isEmpty()) {
+            String message = violations.stream()
+                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                    .collect(Collectors.joining(" | "));
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    private BulkImportResult buildResult(List<Optional<BulkImportResult.RowError>> results) {
+        List<BulkImportResult.RowError> errors = results.stream()
+                .flatMap(Optional::stream)
+                .toList();
+        return BulkImportResult.builder()
+                .total(results.size())
+                .imported(results.size() - errors.size())
+                .failed(errors.size())
+                .errors(errors)
+                .build();
+    }
+
+    private BulkImportResult.RowError rowError(int row, String message) {
+        return BulkImportResult.RowError.builder().row(row).message(message).build();
+    }
+
+    private String reason(Throwable ex) {
+        if (ex instanceof ResponseStatusException rse && rse.getReason() != null) {
+            return rse.getReason();
+        }
+        return ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
+    }
+
+    @Override
+    public Mono<byte[]> exportCustomersExcel() {
+        return customerRepository.findAll()
+                .map(this::toExportRow)
+                .collectList()
+                .flatMap(rows -> Mono.fromCallable(() -> ExcelGenerator.write("Clientes", EXPORT_HEADERS, rows))
+                        .subscribeOn(Schedulers.boundedElastic()));
+    }
+
+    @Override
+    public Mono<byte[]> exportCustomersPdf() {
+        return customerRepository.findAll()
+                .map(this::toExportRow)
+                .collectList()
+                .flatMap(rows -> Mono.fromCallable(() -> PdfGenerator.write("Reporte de Clientes", EXPORT_HEADERS, rows))
+                        .subscribeOn(Schedulers.boundedElastic()));
+    }
+
+    private String[] toExportRow(Customer customer) {
+        Ubigeo ubigeo = customer.getUbigeo();
+        return new String[] {
+                text(customer.getId()),
+                text(customer.getDocType()),
+                text(customer.getDocNumber()),
+                text(customer.getFirstName()),
+                text(customer.getLastName()),
+                text(customer.getEmail()),
+                text(customer.getPhone()),
+                text(customer.getAddress()),
+                ubigeo != null ? text(ubigeo.getDepartment()) : "",
+                ubigeo != null ? text(ubigeo.getProvince()) : "",
+                ubigeo != null ? text(ubigeo.getDistrict()) : "",
+                text(customer.getCustomerSince()),
+                text(customer.getIsActive())
+        };
+    }
+
+    private String text(Object value) {
+        return value == null ? "" : value.toString();
     }
 }

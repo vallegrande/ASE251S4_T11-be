@@ -36,6 +36,8 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
                         .pathMatchers(HttpMethod.GET, "/api/stores/manage", "/api/stores/manage/**")
                         .hasRole("ADMIN")
+                        .pathMatchers("/api/products/import", "/api/products/export/**")
+                        .hasAnyRole("ADMIN", "VENDEDOR")
                         .pathMatchers(HttpMethod.GET,
                                 "/api/products/**", "/api/categories/**", "/api/brands/**",
                                 "/api/ubigeos", "/api/stores/**")
