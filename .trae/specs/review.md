@@ -9,19 +9,19 @@ Envía un body como este. La contraseña la eliges tú; no hace falta generar un
 
 registrar a un ADMIN
 {
-  "email": "vendedor@ejemplo.com",
-  "password": "MiClaveDePrueba123",
-  "firstName": "Vendedor",
-  "lastName": "Prueba",
-  "role": "VENDEDOR",
+  "email": "admin@agrimarket.local",
+  "password": "AdminLocal2026!",
+  "firstName": "Administrador",
+  "lastName": "Local",
+  "role": "ADMIN",
   "isActive": true
 }
 
 loguearse con el usuario ADMIN
 
 {
-  "email": "vendedor@ejemplo.com",
-  "password": "MiClaveDePrueba123"
+  "email": "admin@agrimarket.local",
+  "password": "AdminLocal2026!"
 }
 
 ## Revisor: Implementador (auto-review asistida + verificación estática)

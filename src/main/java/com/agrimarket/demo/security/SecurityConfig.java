@@ -32,6 +32,10 @@ public class SecurityConfig {
                 .addFilterAt(new BearerTokenAuthenticationFilter(bearerTokenService),
                         SecurityWebFiltersOrder.AUTHENTICATION)
                 .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers(
+                                "/swagger-ui.html", "/swagger-ui/**",
+                                "/v3/api-docs", "/v3/api-docs/**")
+                        .permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
                         .pathMatchers(HttpMethod.GET, "/api/stores/manage", "/api/stores/manage/**")

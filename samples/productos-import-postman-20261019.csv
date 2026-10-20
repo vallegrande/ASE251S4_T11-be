@@ -1,0 +1,11 @@
+name,sku,activeIngredient,presentation,basePrice,categoryId,brandId,description,imageUrl,isActive
+Producto importado prueba 01,IMP-20261019-01,Extracto de algas,Frasco 1 L,24.90,1,1,Fertilizante liquido de prueba,,true
+Producto importado prueba 02,IMP-20261019-02,Nitrogeno,Fertilizante granulado 1 kg,18.50,1,1,Fertilizante granulado de prueba,,true
+Producto importado prueba 03,IMP-20261019-03,Fosforo,Fertilizante granulado 1 kg,19.75,1,1,Fertilizante fosfatado de prueba,,true
+Producto importado prueba 04,IMP-20261019-04,Potasio,Fertilizante granulado 1 kg,21.30,1,1,Fertilizante potasico de prueba,,true
+Producto importado prueba 05,IMP-20261019-05,Azufre,Polvo mojable 500 g,16.40,1,1,Producto agricola de prueba,,true
+Producto importado prueba 06,IMP-20261019-06,Cobre,Concentrado 250 ml,22.00,1,1,Producto agricola de prueba,,true
+Producto importado prueba 07,IMP-20261019-07,Calcio,Solucion 1 L,17.90,1,1,Suplemento mineral de prueba,,true
+Producto importado prueba 08,IMP-20261019-08,Humus, Bolsa 5 kg,15.25,1,1,Mejorador de suelo de prueba,,true
+Producto importado prueba 09,IMP-20261019-09,Semillas mixtas,Bolsa 250 g,12.80,1,1,Semillas de prueba,,true
+Producto importado prueba 10,IMP-20261019-10,Micronutrientes,Frasco 500 ml,26.60,1,1,Mezcla de micronutrientes de prueba,,true
