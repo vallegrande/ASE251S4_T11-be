@@ -4,6 +4,7 @@ import com.agrimarket.demo.dto.CreateOrderRequest;
 import com.agrimarket.demo.dto.OrderWithDetailsDTO;
 import com.agrimarket.demo.dto.StatusUpdateRequest;
 import com.agrimarket.demo.dto.UpdateOrderRequest;
+import java.util.List;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -18,6 +19,8 @@ public interface OrderService {
     Mono<OrderWithDetailsDTO> findByIdWithDetailsForCustomer(Integer id, String email);
 
     Mono<OrderWithDetailsDTO> create(CreateOrderRequest req);
+
+    Mono<List<OrderWithDetailsDTO>> createBatch(List<CreateOrderRequest> requests);
 
     Mono<OrderWithDetailsDTO> update(Integer id, UpdateOrderRequest req);
 

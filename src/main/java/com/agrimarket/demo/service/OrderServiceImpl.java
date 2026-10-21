@@ -87,6 +87,18 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Mono<OrderWithDetailsDTO> create(CreateOrderRequest req) {
+        return createOrder(req).as(transactionalOperator::transactional);
+    }
+
+    @Override
+    public Mono<List<OrderWithDetailsDTO>> createBatch(List<CreateOrderRequest> requests) {
+        return Flux.fromIterable(requests)
+                .concatMap(this::createOrder)
+                .collectList()
+                .as(transactionalOperator::transactional);
+    }
+
+    private Mono<OrderWithDetailsDTO> createOrder(CreateOrderRequest req) {
         return validateCreateOrderRequest(req)
                 .then(Mono.defer(() -> {
                     LocalDateTime now = LocalDateTime.now();
@@ -110,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
                                     .collectList()
                                     .map(details -> OrderWithDetailsDTO.from(savedOrder, details)));
 
-                    return transactionalOperator.transactional(flow);
+                    return flow;
                 }));
     }
 

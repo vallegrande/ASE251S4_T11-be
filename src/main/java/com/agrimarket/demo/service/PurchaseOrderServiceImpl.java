@@ -60,6 +60,18 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Override
     public Mono<PurchaseOrderWithDetailsDTO> create(CreatePurchaseOrderRequest req) {
+        return createPurchaseOrder(req).as(transactionalOperator::transactional);
+    }
+
+    @Override
+    public Mono<List<PurchaseOrderWithDetailsDTO>> createBatch(List<CreatePurchaseOrderRequest> requests) {
+        return Flux.fromIterable(requests)
+                .concatMap(this::createPurchaseOrder)
+                .collectList()
+                .as(transactionalOperator::transactional);
+    }
+
+    private Mono<PurchaseOrderWithDetailsDTO> createPurchaseOrder(CreatePurchaseOrderRequest req) {
         return validateInitialStatus(req.status())
                 .then(validateCreate(req))
                 .then(Mono.defer(() -> {
@@ -86,7 +98,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                                         .map(tuple -> buildDTO(tuple.getT1(), tuple.getT2()));
                             });
 
-                    return flow.as(transactionalOperator::transactional);
+                    return flow;
                 }));
     }
 

@@ -4,6 +4,7 @@ import com.agrimarket.demo.dto.CreatePurchaseOrderRequest;
 import com.agrimarket.demo.dto.PurchaseOrderWithDetailsDTO;
 import com.agrimarket.demo.dto.StatusUpdateRequest;
 import com.agrimarket.demo.dto.UpdatePurchaseOrderRequest;
+import java.util.List;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -14,6 +15,8 @@ public interface PurchaseOrderService {
     Mono<PurchaseOrderWithDetailsDTO> findByIdWithDetails(Integer id);
 
     Mono<PurchaseOrderWithDetailsDTO> create(CreatePurchaseOrderRequest req);
+
+    Mono<List<PurchaseOrderWithDetailsDTO>> createBatch(List<CreatePurchaseOrderRequest> requests);
 
     Mono<PurchaseOrderWithDetailsDTO> update(Integer id, UpdatePurchaseOrderRequest req);
 
