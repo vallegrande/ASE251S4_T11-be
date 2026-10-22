@@ -1,16 +1,16 @@
 name,sku,activeIngredient,presentation,basePrice,categoryId,brandId,description,imageUrl,isActive
-Paracetamol 500mg,PAR-500,PARACETAMOL,Tableta x 10,3.50,1,1,Analgesico y antipiretico de venta libre,https://cdn.agrimarket.pe/paracetamol.png,true
-Ibuprofeno 400mg,IBU-400,IBUPROFENO,Tableta x 10,4.20,1,1,Antiinflamatorio no esteroideo,https://cdn.agrimarket.pe/ibuprofeno.png,true
-Amoxicilina 500mg,AMO-500,AMOXICILINA,Capsula x 12,12.90,2,2,Antibiotico de amplio espectro,https://cdn.agrimarket.pe/amoxicilina.png,true
-Vitamina C 1g,VITC-1000,ACIDO ASCORBICO,Efervescente x 10,8.75,3,3,Suplemento antioxidante e inmunologico,https://cdn.agrimarket.pe/vitaminac.png,true
-Omeprazol 20mg,OME-20,OMEPRAZOL,Capsula x 14,9.40,2,2,Inhibidor de la bomba de protones,https://cdn.agrimarket.pe/omeprazol.png,true
-Loratadina 10mg,LOR-10,LORATADINA,Tableta x 10,5.10,1,4,Antihistaminico para alergias,https://cdn.agrimarket.pe/loratadina.png,true
-Diclofenaco gel 1%,DIC-GEL,DICLOFENACO SÓDICO,Gel 60g,14.30,4,1,Antiinflamatorio topico para dolores musculares,https://cdn.agrimarket.pe/diclofenaco.png,true
-Suero oral rehidratante,SUE-ORAL,SALES DE REHIDRATACION,Sobre x 1,2.30,3,4,Hidratacion para cuadros de deshidratacion,https://cdn.agrimarket.pe/suero.png,true
-Alcohol 96 1L,ALC-96,ALCOHOL ETILICO,Solucion 1L,10.50,5,5,Antiseptico de uso externo,https://cdn.agrimarket.pe/alcohol.png,true
-Gasas esteriles 10x10,GAS-10,GASA ESTERIL,Paquete x 10,6.80,5,5,Material de curacion esteril,https://cdn.agrimarket.pe/gasas.png,true
-Metformina 850mg,MET-850,METFORMINA,Tableta x 30,11.20,6,2,Antidiabetico oral,https://cdn.agrimarket.pe/metformina.png,true
-Losartan 50mg,LOS-50,LOSARTAN POTASICO,Tableta x 30,13.60,6,2,Antihipertensivo,https://cdn.agrimarket.pe/losartan.png,true
-Protector solar SPF50,PROT-50,OXIDO DE ZINC,Crema 120ml,32.90,4,6,Fotoproteccion de amplio espectro,https://cdn.agrimarket.pe/protector.png,true
-Termometro digital,TER-DIG,,Unidad,25.00,7,6,Termometro digital de uso domestico,https://cdn.agrimarket.pe/termometro.png,true
-Mascarilla KN95,MAS-KN95,,Caja x 20,18.40,5,6,Mascarilla de proteccion respiratoria,https://cdn.agrimarket.pe/mascarilla.png,false
+Semillas de maiz amarillo,SEM-MAIZ-001,Maiz amarillo,Bolsa de 1 kg,24.90,1,1,Semillas seleccionadas para siembra,https://cdn.agrimarket.pe/semillas-maiz.png,true
+Fertilizante nitrogenado,FERT-NIT-001,Nitrogeno,Bolsa de 1 kg,32.50,2,2,Fertilizante para apoyar el crecimiento vegetativo,https://cdn.agrimarket.pe/fertilizante-nitrogenado.png,true
+Guantes para campo,HERR-GUA-001,Proteccion agricola,Par,12.00,3,3,Guantes reutilizables para labores de campo,https://cdn.agrimarket.pe/guantes-campo.png,true
+Semillas de tomate,SEM-TOM-001,Tomate,Bolsa de 100 g,18.75,1,2,Semillas para cultivo de tomate,https://cdn.agrimarket.pe/semillas-tomate.png,true
+Compost organico,FERT-COM-001,Materia organica,Bolsa de 5 kg,29.90,2,3,Mejorador organico para suelos agricolas,https://cdn.agrimarket.pe/compost.png,true
+Tijera de podar,HERR-TIJ-001,Acero inoxidable,Unidad,35.00,3,1,Tijera manual para poda de plantas,https://cdn.agrimarket.pe/tijera-podar.png,true
+Semillas de lechuga,SEM-LEC-001,Lechuga,Bolsa de 50 g,10.50,1,3,Semillas para cultivo de lechuga,https://cdn.agrimarket.pe/semillas-lechuga.png,true
+Fertilizante foliar,FERT-FOL-001,Micronutrientes,Frasco de 1 L,42.00,2,1,Fertilizante liquido de aplicacion foliar,https://cdn.agrimarket.pe/fertilizante-foliar.png,true
+Pala de jardin,HERR-PAL-001,Acero y madera,Unidad,28.90,3,2,Pala manual para trabajos agricolas,https://cdn.agrimarket.pe/pala-jardin.png,true
+Semillas de zapallo,SEM-ZAP-001,Zapallo,Bolsa de 100 g,16.80,1,1,Semillas para cultivo de zapallo,https://cdn.agrimarket.pe/semillas-zapallo.png,true
+Humus de lombriz,FERT-HUM-001,Humus,Bolsa de 2 kg,21.90,2,2,Abono organico para plantas y cultivos,https://cdn.agrimarket.pe/humus.png,true
+Regadera agricola,HERR-REG-001,Polietileno,Unidad,19.50,3,3,Regadera manual para riego de plantas,https://cdn.agrimarket.pe/regadera.png,true
+Semillas de pepino,SEM-PEP-001,Pepino,Bolsa de 50 g,14.20,1,2,Semillas para cultivo de pepino,https://cdn.agrimarket.pe/semillas-pepino.png,true
+Fertilizante potasico,FERT-POT-001,Potasio,Bolsa de 1 kg,26.40,2,3,Fertilizante granulado para cultivos,https://cdn.agrimarket.pe/fertilizante-potasico.png,true
+Rastrillo de mano,HERR-RAS-001,Acero,Unidad,15.90,3,1,Rastrillo manual para mantenimiento de huertos,https://cdn.agrimarket.pe/rastrillo.png,true

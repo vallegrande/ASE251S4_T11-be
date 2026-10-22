@@ -1,16 +1,17 @@
 docType,docNumber,firstName,lastName,email,phone,address,department,province,district,customerSince,isActive
-DNI,70123456,Carlos,Ramirez Soto,carlos.ramirez@agrimarket.pe,987654321,Av. Los Olivos 123,Lima,Lima,San Juan de Lurigancho,2024-01-15,true
-DNI,70234567,Ana,Torres Vega,ana.torres@agrimarket.pe,987654322,Calle Las Flores 456,Lima,Lima,Miraflores,2024-02-20,true
-DNI,70345678,Luis,Fernandez Ruiz,luis.fernandez@agrimarket.pe,987654323,Jr. Puno 789,Lima,Lima,La Victoria,2024-03-05,true
-RUC,20456789012,Empresa,AgroAndes SAC,compras@agroandes.pe,987654324,Av. Industrial 1200,Lima,Callao,Carmen de la Legua,2023-11-10,true
-DNI,70456789,Maria,Quispe Huaman,maria.quispe@agrimarket.pe,987654325,Av. Arequipa 2345,Lima,Lima,Lince,2024-04-12,true
-DNI,70567890,Jorge,Salazar Diaz,jorge.salazar@agrimarket.pe,987654326,Calle Comercio 87,Arequipa,Arequipa,Cayma,2024-05-01,true
-DNI,70678901,Patricia,Rojas Leon,patricia.rojas@agrimarket.pe,987654327,Av. Goyeneche 500,Arequipa,Arequipa,Arequipa,2024-05-18,true
-DNI,70789012,Miguel,Castro Paredes,miguel.castro@agrimarket.pe,987654328,Jr. Amazonas 321,Loreto,Maynas,Iquitos,2024-06-02,true
-DNI,70890123,Sofia,Mendoza Rios,sofia.mendoza@agrimarket.pe,987654329,Av. La Marina 980,Piura,Piura,Piura,2024-06-25,true
-RUC,20901234567,Distribuidora,Norte EIRL,ventas@distnorte.pe,987654330,Av. Sanchez Cerro 145,Piura,Piura,Castilla,2024-07-08,true
-DNI,70901234,Ricardo,Palacios Nunez,ricardo.palacios@agrimarket.pe,987654331,Calle Real 654,La Libertad,Trujillo,Trujillo,2024-07-19,true
-DNI,71012345,Elena,Vargas Cabrera,elena.vargas@agrimarket.pe,987654332,Av. Espana 210,La Libertad,Trujillo,Victor Larco,2024-08-03,true
-DNI,71123456,Diego,Herrera Campos,diego.herrera@agrimarket.pe,987654333,Jr. Cusco 432,Cusco,Cusco,Wanchaq,2024-08-21,true
-DNI,71234567,Valeria,Santos Moya,valeria.santos@agrimarket.pe,987654334,Av. El Sol 1050,Cusco,Cusco,Cusco,2024-09-05,true
-DNI,71345678,Andres,Cuya Farfan,andres.cuya@agrimarket.pe,987654335,Calle Mercaderes 88,Junin,Huancayo,El Tambo,2024-09-17,false
+DNI,72100001,Carlos,Ramirez Soto,carlos.ramirez.ca@agrimarket.test,987654321,Av Los Olivos 123,Lima,Cañete,Asia,2026-10-21,true
+DNI,72100002,Ana,Torres Vega,ana.torres.ca@agrimarket.test,987654322,Calle Las Flores 456,Lima,Cañete,Calango,2026-10-21,true
+DNI,72100003,Luis,Fernandez Ruiz,luis.fernandez.ca@agrimarket.test,987654323,Jr Lima 789,Lima,Cañete,Cerro Azul,2026-10-21,true
+DNI,72100004,Maria,Quispe Huaman,maria.quispe.ca@agrimarket.test,987654324,Av Arequipa 234,Lima,Cañete,Chilca,2026-10-21,true
+DNI,72100005,Jorge,Salazar Diaz,jorge.salazar.ca@agrimarket.test,987654325,Calle Comercio 87,Lima,Cañete,Coayllo,2026-10-21,true
+DNI,72100006,Patricia,Rojas Leon,patricia.rojas.ca@agrimarket.test,987654326,Jr Dos de Mayo 150,Lima,Cañete,Imperial,2026-10-21,true
+DNI,72100007,Miguel,Castro Paredes,miguel.castro.ca@agrimarket.test,987654327,Av Los Heroes 321,Lima,Cañete,Lunahuaná,2026-10-21,true
+DNI,72100008,Sofia,Mendoza Rios,sofia.mendoza.ca@agrimarket.test,987654328,Calle Real 980,Lima,Cañete,Mala,2026-10-21,true
+DNI,72100009,Ricardo,Palacios Nunez,ricardo.palacios.ca@agrimarket.test,987654329,Av La Marina 105,Lima,Cañete,Nuevo Imperial,2026-10-21,true
+DNI,72100010,Elena,Vargas Cabrera,elena.vargas.ca@agrimarket.test,987654330,Jr Amazonas 654,Lima,Cañete,Pacarán,2026-10-21,true
+DNI,72100011,Diego,Herrera Campos,diego.herrera.ca@agrimarket.test,987654331,Calle San Martin 432,Lima,Cañete,Quilmaná,2026-10-21,true
+DNI,72100012,Valeria,Santos Moya,valeria.santos.ca@agrimarket.test,987654332,Av El Sol 750,Lima,Cañete,San Antonio,2026-10-21,true
+DNI,72100013,Andres,Cuya Farfan,andres.cuya.ca@agrimarket.test,987654333,Calle Progreso 88,Lima,Cañete,San Luis,2026-10-21,true
+DNI,72100014,Lucia,Prueba Uno,lucia.prueba.ca@agrimarket.test,987654334,Jr Jose Galvez 113,Lima,Cañete,San Vicente de Cañete,2026-10-21,true
+DNI,72100015,Marco,Prueba Dos,marco.prueba.ca@agrimarket.test,987654335,Av Mariscal Benavides 210,Lima,Cañete,Santa Cruz de Flores,2026-10-21,true
+DNI,72100016,Elena,Prueba Tres,elena.prueba.ca@agrimarket.test,987654336,Calle Principal 16,Lima,Cañete,Zúñiga,2026-10-21,true
