@@ -3,11 +3,12 @@
 # El .gitignore ya incluye application-local.yml
 
 # --- MongoDB Atlas (Brando o de Gian,en todo caso mano lo pegas como comentario tu URI de tu custer xd ) ---
-MONGODB_URI: "mongodb://admin:mongodb12345678@localhost:27017/Agrimarket?authSource=admin"
+MONGODB_URI: "mongodb+srv://gianherrera_db_user:vZSohpapGRtE7sNP@cluster0.0dvnx1x.mongodb.net/"
+
 
 # --- SQL Server Local (Docker) ---
 SQLSERVER_HOST: "localhost"
 SQLSERVER_PORT: "1433"
 SQLSERVER_USER: "sa"
 SQLSERVER_PASSWORD: "Sql12345678!"
-SQLSERVER_DATABASE: "Agrimarket"
+SQLSERVER_DATABASE: "agrimarket"
