@@ -6,6 +6,7 @@ import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
@@ -14,6 +15,12 @@ public interface InventoryRepository extends ReactiveCrudRepository<Inventory, I
     Mono<Inventory> findByProductIdAndStoreId(String productId, Integer storeId);
 
     Mono<Boolean> existsByProductIdAndStoreId(String productId, Integer storeId);
+
+    Flux<Inventory> findAllByProductId(String productId);
+
+    Flux<Inventory> findAllByStoreId(Integer storeId);
+
+    Flux<Inventory> findAllByProductIdAndStoreId(String productId, Integer storeId);
 
     @Modifying
     @Query("UPDATE inventory SET current_stock = current_stock - :quantity, updated_at = :updatedAt " +

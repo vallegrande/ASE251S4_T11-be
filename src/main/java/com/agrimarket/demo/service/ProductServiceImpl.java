@@ -1,8 +1,11 @@
 package com.agrimarket.demo.service;
 
 import com.agrimarket.demo.dto.BulkImportResult;
+import com.agrimarket.demo.dto.StorefrontProductDTO;
 import com.agrimarket.demo.exception.ResourceNotFoundException;
 import com.agrimarket.demo.model.mongo.Product;
+import com.agrimarket.demo.repository.sql.InventoryRepository;
+import com.agrimarket.demo.repository.sql.StoreRepository;
 import com.agrimarket.demo.repository.mongo.ProductRepository;
 import com.agrimarket.demo.util.ExcelGenerator;
 import com.agrimarket.demo.util.PdfGenerator;
@@ -12,6 +15,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,12 +34,14 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final InventoryRepository inventoryRepository;
+    private final StoreRepository storeRepository;
     private final SequenceGeneratorService sequenceGeneratorService;
     private final Validator validator;
 
     private static final String[] EXPORT_HEADERS = {
             "id", "name", "sku", "activeIngredient", "presentation", "basePrice",
-            "categoryId", "brandId", "description", "imageUrl", "isActive"
+            "categoryId", "brandId", "description", "imageUrl", "isActive", "isPublishedOnline"
     };
 
     @Override
@@ -46,6 +52,34 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Flux<Product> findByStatus(Boolean isActive) {
         return productRepository.findByIsActive(isActive);
+    }
+
+    @Override
+    public Flux<StorefrontProductDTO> findStorefrontProducts(Integer storeId) {
+        return storeRepository.existsByStoreIdAndIsActiveTrue(storeId)
+                .filter(Boolean::booleanValue)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "La tienda no existe o no está disponible")))
+                .flatMapMany(ignored -> inventoryRepository.findAllByStoreId(storeId)
+                        .filter(inventory -> inventory.getCurrentStock() != null
+                                && inventory.getCurrentStock() > 0)
+                        .flatMap(inventory -> productRepository.findById(
+                                        Long.parseLong(inventory.getProductId()))
+                                .filter(product -> Boolean.TRUE.equals(product.getIsActive())
+                                        && Boolean.TRUE.equals(product.getIsPublishedOnline()))
+                                .map(product -> new StorefrontProductDTO(
+                                        product.getId(),
+                                        product.getName(),
+                                        product.getActiveIngredient(),
+                                        product.getPresentation(),
+                                        product.getBasePrice(),
+                                        product.getImageUrl(),
+                                        product.getDescription(),
+                                        product.getSku(),
+                                        product.getCategoryId(),
+                                        product.getBrandId(),
+                                        storeId,
+                                        true))));
     }
 
     @Override
@@ -63,6 +97,9 @@ public class ProductServiceImpl implements ProductService {
                     product.setUpdatedAt(now);
                     if (product.getIsActive() == null) {
                         product.setIsActive(true);
+                    }
+                    if (product.getIsPublishedOnline() == null) {
+                        product.setIsPublishedOnline(false);
                     }
                     return productRepository.save(product);
                 });
@@ -83,7 +120,27 @@ public class ProductServiceImpl implements ProductService {
                     existing.setCategoryId(product.getCategoryId());
                     existing.setBrandId(product.getBrandId());
                     existing.setMetadata(product.getMetadata());
-                    existing.setIsActive(product.getIsActive());
+                    if (product.getIsActive() != null) {
+                        existing.setIsActive(product.getIsActive());
+                    }
+                    if (product.getIsPublishedOnline() != null) {
+                        existing.setIsPublishedOnline(product.getIsPublishedOnline());
+                    }
+                    existing.setUpdatedAt(LocalDateTime.now());
+                    return productRepository.save(existing);
+                });
+    }
+
+    @Override
+    public Mono<Product> updateOnlinePublication(Long id, Boolean isPublishedOnline) {
+        if (isPublishedOnline == null) {
+            return Mono.error(new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "isPublishedOnline es obligatorio"));
+        }
+        return productRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Product no encontrado con id: " + id)))
+                .flatMap(existing -> {
+                    existing.setIsPublishedOnline(isPublishedOnline);
                     existing.setUpdatedAt(LocalDateTime.now());
                     return productRepository.save(existing);
                 });
@@ -161,6 +218,8 @@ public class ProductServiceImpl implements ProductService {
                 .categoryId(categoryId)
                 .brandId(brandId)
                 .isActive(ValueParser.parseBoolean(ValueParser.value(row, "isactive", "activo"), Boolean.TRUE))
+                .isPublishedOnline(ValueParser.parseBoolean(
+                        ValueParser.value(row, "ispublishedonline", "publicadoonline"), Boolean.FALSE))
                 .build();
 
         validate(product);
@@ -230,7 +289,8 @@ public class ProductServiceImpl implements ProductService {
                 text(product.getBrandId()),
                 text(product.getDescription()),
                 text(product.getImageUrl()),
-                text(product.getIsActive())
+                text(product.getIsActive()),
+                text(product.getIsPublishedOnline())
         };
     }
 

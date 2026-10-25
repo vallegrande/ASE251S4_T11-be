@@ -28,6 +28,20 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    public Flux<Inventory> findByProductIdAndStoreId(String productId, Integer storeId) {
+        if (productId != null && !productId.isBlank() && storeId != null) {
+            return inventoryRepository.findAllByProductIdAndStoreId(productId, storeId);
+        }
+        if (productId != null && !productId.isBlank()) {
+            return inventoryRepository.findAllByProductId(productId);
+        }
+        if (storeId != null) {
+            return inventoryRepository.findAllByStoreId(storeId);
+        }
+        return findAll();
+    }
+
+    @Override
     public Mono<Inventory> findById(Integer inventoryId) {
         return inventoryRepository.findById(inventoryId)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException(

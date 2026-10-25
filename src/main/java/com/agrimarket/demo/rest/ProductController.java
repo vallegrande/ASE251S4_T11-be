@@ -1,6 +1,7 @@
 package com.agrimarket.demo.rest;
 
 import com.agrimarket.demo.dto.BulkImportResult;
+import com.agrimarket.demo.dto.ProductPublicationRequest;
 import com.agrimarket.demo.model.mongo.Product;
 import com.agrimarket.demo.service.ProductService;
 import jakarta.validation.Valid;
@@ -13,11 +14,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/products")
+@Validated
 @RequiredArgsConstructor
 public class ProductController {
 
@@ -65,6 +68,13 @@ public class ProductController {
         return productService.restore(id)
                 .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+    }
+
+    @PatchMapping("/{id}/publication")
+    public Mono<Product> updateOnlinePublication(
+            @PathVariable Long id,
+            @Valid @RequestBody ProductPublicationRequest request) {
+        return productService.updateOnlinePublication(id, request.getIsPublishedOnline());
     }
 
     /** Carga masiva de productos desde un archivo Excel (.xlsx/.xls) o CSV. */

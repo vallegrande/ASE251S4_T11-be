@@ -1,17 +1,17 @@
-docType,docNumber,firstName,lastName,email,phone,address,department,province,district,customerSince,isActive
-DNI,72100001,Carlos,Ramirez Soto,carlos.ramirez.ca@agrimarket.test,987654321,Av Los Olivos 123,Lima,Cañete,Asia,2026-10-21,true
-DNI,72100002,Ana,Torres Vega,ana.torres.ca@agrimarket.test,987654322,Calle Las Flores 456,Lima,Cañete,Calango,2026-10-21,true
-DNI,72100003,Luis,Fernandez Ruiz,luis.fernandez.ca@agrimarket.test,987654323,Jr Lima 789,Lima,Cañete,Cerro Azul,2026-10-21,true
-DNI,72100004,Maria,Quispe Huaman,maria.quispe.ca@agrimarket.test,987654324,Av Arequipa 234,Lima,Cañete,Chilca,2026-10-21,true
-DNI,72100005,Jorge,Salazar Diaz,jorge.salazar.ca@agrimarket.test,987654325,Calle Comercio 87,Lima,Cañete,Coayllo,2026-10-21,true
-DNI,72100006,Patricia,Rojas Leon,patricia.rojas.ca@agrimarket.test,987654326,Jr Dos de Mayo 150,Lima,Cañete,Imperial,2026-10-21,true
-DNI,72100007,Miguel,Castro Paredes,miguel.castro.ca@agrimarket.test,987654327,Av Los Heroes 321,Lima,Cañete,Lunahuaná,2026-10-21,true
-DNI,72100008,Sofia,Mendoza Rios,sofia.mendoza.ca@agrimarket.test,987654328,Calle Real 980,Lima,Cañete,Mala,2026-10-21,true
-DNI,72100009,Ricardo,Palacios Nunez,ricardo.palacios.ca@agrimarket.test,987654329,Av La Marina 105,Lima,Cañete,Nuevo Imperial,2026-10-21,true
-DNI,72100010,Elena,Vargas Cabrera,elena.vargas.ca@agrimarket.test,987654330,Jr Amazonas 654,Lima,Cañete,Pacarán,2026-10-21,true
-DNI,72100011,Diego,Herrera Campos,diego.herrera.ca@agrimarket.test,987654331,Calle San Martin 432,Lima,Cañete,Quilmaná,2026-10-21,true
-DNI,72100012,Valeria,Santos Moya,valeria.santos.ca@agrimarket.test,987654332,Av El Sol 750,Lima,Cañete,San Antonio,2026-10-21,true
-DNI,72100013,Andres,Cuya Farfan,andres.cuya.ca@agrimarket.test,987654333,Calle Progreso 88,Lima,Cañete,San Luis,2026-10-21,true
-DNI,72100014,Lucia,Prueba Uno,lucia.prueba.ca@agrimarket.test,987654334,Jr Jose Galvez 113,Lima,Cañete,San Vicente de Cañete,2026-10-21,true
-DNI,72100015,Marco,Prueba Dos,marco.prueba.ca@agrimarket.test,987654335,Av Mariscal Benavides 210,Lima,Cañete,Santa Cruz de Flores,2026-10-21,true
-DNI,72100016,Elena,Prueba Tres,elena.prueba.ca@agrimarket.test,987654336,Calle Principal 16,Lima,Cañete,Zúñiga,2026-10-21,true
+docType,docNumber,firstName,lastName,email,phone,address,ubigeoId,department,province,district,password,totalVisits,lastPurchaseDate,customerSince,notes,isActive
+DNI,72100001,Carlos,Ramirez Soto,carlos.ramirez.ca@agrimarket.test,987654321,Av Los Olivos 123,10,Lima,Cañete,Asia,AgroCliente2026!01,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100002,Ana,Torres Vega,ana.torres.ca@agrimarket.test,987654322,Calle Las Flores 456,11,Lima,Cañete,Calango,AgroCliente2026!02,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100003,Luis,Fernandez Ruiz,luis.fernandez.ca@agrimarket.test,987654323,Jr Lima 789,12,Lima,Cañete,Cerro Azul,AgroCliente2026!03,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100004,Maria,Quispe Huaman,maria.quispe.ca@agrimarket.test,987654324,Av Arequipa 234,13,Lima,Cañete,Chilca,AgroCliente2026!04,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100005,Jorge,Salazar Diaz,jorge.salazar.ca@agrimarket.test,987654325,Calle Comercio 87,14,Lima,Cañete,Coayllo,AgroCliente2026!05,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100006,Patricia,Rojas Leon,patricia.rojas.ca@agrimarket.test,987654326,Jr Dos de Mayo 150,5,Lima,Cañete,Imperial,AgroCliente2026!06,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100007,Miguel,Castro Paredes,miguel.castro.ca@agrimarket.test,987654327,Av Los Heroes 321,9,Lima,Cañete,Lunahuaná,AgroCliente2026!07,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100008,Sofia,Mendoza Rios,sofia.mendoza.ca@agrimarket.test,987654328,Calle Real 980,15,Lima,Cañete,Mala,AgroCliente2026!08,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100009,Ricardo,Palacios Nunez,ricardo.palacios.ca@agrimarket.test,987654329,Av La Marina 105,6,Lima,Cañete,Nuevo Imperial,AgroCliente2026!09,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100010,Elena,Vargas Cabrera,elena.vargas.ca@agrimarket.test,987654330,Jr Amazonas 654,16,Lima,Cañete,Pacarán,AgroCliente2026!10,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100011,Diego,Herrera Campos,diego.herrera.ca@agrimarket.test,987654331,Calle San Martin 432,7,Lima,Cañete,Quilmaná,AgroCliente2026!11,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100012,Valeria,Santos Moya,valeria.santos.ca@agrimarket.test,987654332,Av El Sol 750,17,Lima,Cañete,San Antonio,AgroCliente2026!12,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100013,Andres,Cuya Farfan,andres.cuya.ca@agrimarket.test,987654333,Calle Progreso 88,8,Lima,Cañete,San Luis,AgroCliente2026!13,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100014,Lucia,Prueba Uno,lucia.prueba.ca@agrimarket.test,987654334,Jr Jose Galvez 113,4,Lima,Cañete,San Vicente de Cañete,AgroCliente2026!14,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100015,Marco,Prueba Dos,marco.prueba.ca@agrimarket.test,987654335,Av Mariscal Benavides 210,18,Lima,Cañete,Santa Cruz de Flores,AgroCliente2026!15,0,,2026-10-25,Cliente de prueba del sector agrícola,true
+DNI,72100016,Elena,Prueba Tres,elena.prueba.ca@agrimarket.test,987654336,Calle Principal 16,19,Lima,Cañete,Zúñiga,AgroCliente2026!16,0,,2026-10-25,Cliente de prueba del sector agrícola,true

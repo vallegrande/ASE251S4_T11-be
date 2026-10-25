@@ -4,14 +4,17 @@ import com.agrimarket.demo.dto.InventoryRequest;
 import com.agrimarket.demo.model.sql.Inventory;
 import com.agrimarket.demo.service.InventoryService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/inventory")
+@Validated
 @RequiredArgsConstructor
 public class InventoryController {
 
@@ -19,8 +22,10 @@ public class InventoryController {
 
     // ADMIN/VENDEDOR: consulta el stock registrado por producto y tienda.
     @GetMapping
-    public Flux<Inventory> findAll() {
-        return inventoryService.findAll();
+    public Flux<Inventory> findAll(
+            @RequestParam(required = false) String productId,
+            @RequestParam(required = false) @Positive Integer storeId) {
+        return inventoryService.findByProductIdAndStoreId(productId, storeId);
     }
 
     @GetMapping("/{id}")

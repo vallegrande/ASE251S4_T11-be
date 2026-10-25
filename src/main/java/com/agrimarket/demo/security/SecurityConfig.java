@@ -58,6 +58,9 @@ public class SecurityConfig {
                                 "/api/auth/register")
                         .permitAll()
 
+                        .pathMatchers(HttpMethod.GET, "/api/storefront/products")
+                        .permitAll()
+
                         .pathMatchers(HttpMethod.POST, "/api/auth/logout")
                         .authenticated()
 
@@ -72,9 +75,20 @@ public class SecurityConfig {
                                 "/api/products/export/**")
                         .hasAnyRole("ADMIN", "VENDEDOR")
 
+                        .pathMatchers(HttpMethod.POST, "/api/products")
+                        .hasRole("ADMIN")
+
+                        .pathMatchers(HttpMethod.PUT, "/api/products/**")
+                        .hasRole("ADMIN")
+
+                        .pathMatchers(HttpMethod.PATCH, "/api/products/**")
+                        .hasRole("ADMIN")
+
+                        .pathMatchers("/api/products", "/api/products/**")
+                        .hasAnyRole("ADMIN", "VENDEDOR")
+
                         .pathMatchers(
                                 HttpMethod.GET,
-                                "/api/products/**",
                                 "/api/categories/**",
                                 "/api/brands/**",
                                 "/api/ubigeos",

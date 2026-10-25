@@ -49,7 +49,7 @@ Los ejemplos registran datos de prueba para MongoDB y SQL Server. Los IDs se gen
 
 El backend precarga el ubigeo **ID 4: Lima / Cañete / San Vicente de Cañete**. Verifica los IDs de productos, clientes, proveedores y tiendas con las respuestas o los endpoints GET; no asumas que comienzan en 1 si ya hay datos en las bases.
 
-## 1. MongoDB: tres categorías
+## 1. MongoDB: cuatro categorías
 
 Envía cada JSON por separado a `POST http://localhost:8080/api/categories`. Guarda el ID de cada respuesta.
 
@@ -85,6 +85,18 @@ Envía cada JSON por separado a `POST http://localhost:8080/api/categories`. Gua
   "level": 1,
   "code": "HER-TEST-01",
   "orderDisplay": 3,
+  "isActive": true
+}
+```
+
+```json
+{
+  "categoryName": "Protección de cultivos",
+  "parentCategoryId": null,
+  "description": "Productos para el control de plagas y enfermedades de los cultivos",
+  "level": 1,
+  "code": "PRO-TEST-01",
+  "orderDisplay": 4,
   "isActive": true
 }
 ```
@@ -177,7 +189,7 @@ Envía cada JSON por separado a `POST http://localhost:8080/api/suppliers`. Guar
 
 ## 4. MongoDB: un cliente
 
-Envía a `POST http://localhost:8080/api/customers` con el token ADMIN o VENDEDOR. El password debe tener al menos 12 caracteres y el servicio lo guarda cifrado.
+Envía a `POST http://localhost:8080/api/customers` con el token ADMIN o VENDEDOR. Los tipos permitidos son `DNI` (8 dígitos), `RUC` (11 dígitos) y `CE` (9 dígitos). Nombres, apellidos, email, teléfono, dirección, ubigeo, contraseña y fecha de registro son obligatorios. `lastPurchaseDate` y `notes` son opcionales. El password debe tener al menos 12 caracteres y el servicio lo guarda cifrado.
 
 ```json
 {
@@ -205,6 +217,10 @@ Envía a `POST http://localhost:8080/api/customers` con el token ADMIN o VENDEDO
 
 Guarda el `id` devuelto; úsalo como `customerId` en la orden de venta.
 
+Para la carga masiva, usa `POST http://localhost:8080/api/customers/import` con el archivo `samples/clientes-carga-masiva.csv` como campo multipart `file`. El CSV incluye correo y contraseña, además de los campos requeridos por el formulario. `ubigeoId` debe corresponder al mismo distrito indicado en `department`, `province` y `district`; esos tres nombres completan el objeto de ubigeo que guarda el cliente. No incluyas `id` del cliente, porque lo genera la base. Los datos y contraseñas del archivo son ficticios y solo para pruebas.
+
+Para consultar las categorías activas disponibles, usa `GET http://localhost:8080/api/categories/status/true`. La tienda pública consulta `GET http://localhost:8080/api/storefront/products?storeId={storeId}`; no se deben inventar categorías o productos en el frontend.
+
 ## 5. MongoDB: un producto
 
 Envía a `POST http://localhost:8080/api/products`. Sustituye `categoryId` y `brandId` por los IDs reales de la categoría Semillas y la marca elegida. Guarda el `id` devuelto para inventario y transacciones.
@@ -224,11 +240,24 @@ Envía a `POST http://localhost:8080/api/products`. Sustituye `categoryId` y `br
     "cultivo": "Maíz",
     "peso": "1 kg"
   },
-  "isActive": true
+  "isActive": true,
+  "isPublishedOnline": false
 }
 ```
 
-`categoryId`, `brandId` y `productId` se envían como texto aunque sean IDs numéricos de MongoDB. Reemplaza los `"1"` de ejemplo con los valores que recibas.
+`categoryId`, `brandId` y `productId` se envían como texto aunque sean IDs numéricos de MongoDB. Reemplaza los `"1"` de ejemplo con los valores que recibas. `isPublishedOnline` inicia en `false`: el producto no aparecerá en la tienda web hasta que un ADMIN lo publique y tenga stock en una tienda.
+
+Las consultas y modificaciones administrativas de `/api/products` requieren token ADMIN o VENDEDOR; crear, editar, publicar, restaurar y desactivar requieren token ADMIN.
+
+Para publicar un producto en la tienda, envía `PATCH http://localhost:8080/api/products/{productId}/publication` con token ADMIN:
+
+```json
+{
+  "isPublishedOnline": true
+}
+```
+
+La tienda pública consulta `GET http://localhost:8080/api/storefront/products?storeId={storeId}` sin token. Devuelve solo productos activos, publicados y con stock mayor que cero en esa tienda activa.
 
 ## 6. SQL Server: cuatro tiendas en San Vicente de Cañete
 
@@ -282,6 +311,8 @@ Envía a `POST http://localhost:8080/api/inventory` con token ADMIN o VENDEDOR. 
   "minimumStock": 5
 }
 ```
+
+En el panel administrativo puedes consultar el inventario de un producto y tienda con `GET /api/inventory?productId={productId}&storeId={storeId}`. Si ya existe, actualízalo con `PUT /api/inventory/{inventoryId}`; si no existe, créalo con `POST /api/inventory`. Un producto con inventario en más de una tienda tiene un registro independiente por tienda.
 
 ## 8. SQL Server: una orden de venta
 

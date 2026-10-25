@@ -64,6 +64,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Mono<Customer> create(Customer customer) {
+        String documentError = documentValidationError(customer.getDocType(), customer.getDocNumber());
+        if (documentError != null) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, documentError));
+        }
         if (!validPassword(customer.getPassword())) {
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "password debe tener al menos 12 caracteres y no superar 72 bytes en UTF-8"));
@@ -102,27 +106,42 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Customer no encontrado con id: " + id)))
                 .flatMap(existing -> {
+                    if (customer.getDocType() == null || customer.getDocNumber() == null
+                            || customer.getEmail() == null) {
+                        return Mono.error(new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST, "docType, docNumber y email son obligatorios"));
+                    }
+                    String normalizedDocType = customer.getDocType().trim().toUpperCase();
+                    String normalizedDocNumber = customer.getDocNumber().trim();
+                    String documentError = documentValidationError(normalizedDocType, normalizedDocNumber);
+                    if (documentError != null) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, documentError));
+                    }
                     String email = customer.getEmail().trim().toLowerCase();
-                    String docType = customer.getDocType().trim();
-                    String docNumber = customer.getDocNumber().trim();
                     Mono<Boolean> emailUsed = email.equalsIgnoreCase(existing.getEmail())
                             ? Mono.just(false)
                             : emailIsInUse(email, id);
                     Mono<Boolean> documentUsed = customerRepository
-                            .findByDocTypeIgnoreCaseAndDocNumber(docType, docNumber)
+                            .findByDocTypeIgnoreCaseAndDocNumber(normalizedDocType, normalizedDocNumber)
                             .filter(found -> !Objects.equals(found.getId(), id))
                             .hasElement();
                     return Mono.zip(emailUsed, documentUsed)
                             .flatMap(used -> used.getT1() || used.getT2()
                                     ? Mono.error(new ResponseStatusException(
                                             HttpStatus.CONFLICT, "Ya existe una cuenta con ese email o documento"))
-                                    : updateExistingCustomer(existing, customer, email));
+                                    : updateExistingCustomer(
+                                            existing, customer, email, normalizedDocType, normalizedDocNumber));
                 });
     }
 
-    private Mono<Customer> updateExistingCustomer(Customer existing, Customer customer, String email) {
-        existing.setDocType(customer.getDocType().trim().toUpperCase());
-        existing.setDocNumber(customer.getDocNumber().trim());
+    private Mono<Customer> updateExistingCustomer(
+            Customer existing,
+            Customer customer,
+            String email,
+            String docType,
+            String docNumber) {
+        existing.setDocType(docType);
+        existing.setDocNumber(docNumber);
         existing.setFirstName(customer.getFirstName());
         existing.setLastName(customer.getLastName());
         existing.setEmail(email);
@@ -143,7 +162,39 @@ public class CustomerServiceImpl implements CustomerService {
         existing.setNotes(customer.getNotes());
         existing.setIsActive(customer.getIsActive());
         existing.setUpdatedAt(LocalDateTime.now());
-        return customerRepository.save(existing);
+        return validateCustomer(existing).then(customerRepository.save(existing));
+    }
+
+    private Mono<Void> validateCustomer(Customer customer) {
+        Set<ConstraintViolation<Customer>> violations = validator.validate(customer);
+        if (violations.isEmpty()) {
+            return Mono.empty();
+        }
+        String message = violations.stream()
+                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .collect(Collectors.joining(" | "));
+        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, message));
+    }
+
+    private String documentValidationError(String docType, String docNumber) {
+        if (docType == null || docNumber == null) {
+            return "docType y docNumber son obligatorios";
+        }
+        String normalizedType = docType.trim().toUpperCase();
+        String normalizedNumber = docNumber.trim();
+        boolean valid = switch (normalizedType) {
+            case "DNI" -> normalizedNumber.matches("\\d{8}");
+            case "RUC" -> normalizedNumber.matches("\\d{11}");
+            case "CE" -> normalizedNumber.matches("\\d{9}");
+            default -> false;
+        };
+        if (valid) return null;
+        return switch (normalizedType) {
+            case "DNI" -> "DNI debe tener exactamente 8 dígitos";
+            case "RUC" -> "RUC debe tener exactamente 11 dígitos";
+            case "CE" -> "CE debe tener exactamente 9 dígitos";
+            default -> "docType debe ser DNI, RUC o CE";
+        };
     }
 
     private Mono<Boolean> emailIsInUse(String email, Long excludingCustomerId) {
@@ -243,18 +294,26 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private Ubigeo mapUbigeo(Map<String, String> row) {
+        String idValue = ValueParser.required(row, "ubigeoId", "ubigeoid", "idubigeo");
+        Long id;
+        try {
+            id = Long.valueOf(idValue);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("ubigeoId debe ser un número entero");
+        }
         String department = ValueParser.value(row, "department", "departamento");
         String province = ValueParser.value(row, "province", "provincia");
         String district = ValueParser.value(row, "district", "distrito");
-        boolean any = department != null || province != null || district != null;
-        if (!any) {
-            return null;
-        }
         if (department == null || province == null || district == null) {
             throw new IllegalArgumentException(
-                    "Si registra ubigeo debe completar department, province y district");
+                    "Si registra ubigeoId debe completar department, province y district");
         }
-        return Ubigeo.builder().department(department).province(province).district(district).build();
+        return Ubigeo.builder()
+                .id(id)
+                .department(department)
+                .province(province)
+                .district(district)
+                .build();
     }
 
     private String password(Map<String, String> row) {

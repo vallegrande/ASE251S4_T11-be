@@ -13,10 +13,12 @@ public class CustomerRegistrationRequest {
 
     @NotBlank
     @Size(max = 20)
+    @Pattern(regexp = "(?i)DNI|RUC|CE", message = "docType debe ser DNI, RUC o CE")
     private String docType;
 
     @NotBlank
-    @Size(max = 20)
+    @Pattern(regexp = "(?:\\d{8}|\\d{11}|\\d{9})",
+            message = "docNumber debe tener 8 dígitos para DNI, 11 para RUC o 9 para CE")
     private String docNumber;
 
     @NotBlank
@@ -37,6 +39,7 @@ public class CustomerRegistrationRequest {
     @Size(max = 50)
     private String phone;
 
+    @NotBlank
     @Size(max = 255)
     private String address;
 

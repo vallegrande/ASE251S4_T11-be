@@ -49,7 +49,7 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
-    public Mono<Customer> update(@PathVariable Long id, @Valid @RequestBody Customer customer) {
+    public Mono<Customer> update(@PathVariable Long id, @RequestBody Customer customer) {
         return customerService.update(id, customer);
     }
 

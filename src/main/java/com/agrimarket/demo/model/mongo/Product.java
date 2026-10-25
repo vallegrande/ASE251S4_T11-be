@@ -59,6 +59,9 @@ public class Product {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Builder.Default
+    private Boolean isPublishedOnline = false;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;

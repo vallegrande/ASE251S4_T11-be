@@ -15,17 +15,19 @@ spec:
       labels:
         app: agrimarket-backend
     spec:
+      nodeSelector:
+        role: backend1
       containers:
         - name: agrimarket-backend
-          image: agrimarket-backend:latest
-          imagePullPolicy: IfNotPresent
+          image: jemith28/agrimarket-backend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:
             - configMapRef:
                 name: app-config
             - secretRef:
-                name: mongodb-credentials
+                name: app-secrets
           resources:
             requests:
               cpu: "250m"
@@ -44,4 +46,4 @@ spec:
               path: /actuator/health
               port: 8080
             initialDelaySeconds: 35
-            periodSeconds: 15
+            periodSeconds: 15s
