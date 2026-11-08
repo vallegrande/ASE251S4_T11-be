@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 22mm 15mm 18mm;
+            @bottom-center {
+                content: "AgriMarket - Página " counter(page);
+                color: #64748b;
+                font-size: 8pt;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            color: #1e293b;
+            font-family: sans-serif;
+            font-size: 9pt;
+        }
+
+        .report {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .heading {
+            margin: 0 auto 20px;
+            padding: 18px 22px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .brand {
+            margin-bottom: 5px;
+            color: #15803d;
+            font-size: 9pt;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0;
+            color: #14532d;
+            font-size: 21pt;
+        }
+
+        .meta {
+            margin-top: 9px;
+            color: #475569;
+            font-size: 9pt;
+        }
+
+        .count {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 5px 12px;
+            background: #dcfce7;
+            border-radius: 14px;
+            color: #166534;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        th {
+            padding: 9px 7px;
+            background: #166534;
+            color: #ffffff;
+            font-size: 8pt;
+            text-align: left;
+        }
+
+        td {
+            padding: 7px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+            word-wrap: break-word;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+<main class="report">
+    <header class="heading">
+        <div class="brand">AgriMarket - Reporte</div>
+        <h1>{{title}}</h1>
+        <div class="meta">Generado el {{generatedAt}}</div>
+        <div class="count">{{recordCount}} {{recordLabel}}</div>
+    </header>
+    <table>
+        <thead>
+        <tr>{{tableHeaders}}</tr>
+        </thead>
+        <tbody>
+        {{tableRows}}
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
