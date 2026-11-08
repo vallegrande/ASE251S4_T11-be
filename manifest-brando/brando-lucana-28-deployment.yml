@@ -19,7 +19,7 @@ spec:
         role: backend1
       containers:
         - name: agrimarket-backend
-          image: jemith28/agrimarket-backend:latest
+          image: jemith28/agrimarket-backend-v2:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -46,4 +46,4 @@ spec:
               path: /actuator/health
               port: 8080
             initialDelaySeconds: 35
-            periodSeconds: 15s
+            periodSeconds: 15

@@ -1,4 +1,3 @@
-
 package com.agrimarket.demo.config;
 
 import org.springframework.context.annotation.Bean;
@@ -16,10 +15,8 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfig = new CorsConfiguration();
 
-        corsConfig.setAllowedOrigins(List.of(
-                "http://localhost:8081",
-                "http://127.0.0.1:8081"
-        ));
+        // Permitir cualquier origen para evitar bloqueos en la nube
+        corsConfig.setAllowedOrigins(List.of("*"));
 
         corsConfig.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "PATCH",
@@ -30,7 +27,7 @@ public class CorsConfig {
                 "Authorization", "Content-Type", "Accept", "Origin"
         ));
 
-        corsConfig.setAllowCredentials(true);
+        corsConfig.setAllowCredentials(false); // Debe ser false si usas "*"
         corsConfig.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
