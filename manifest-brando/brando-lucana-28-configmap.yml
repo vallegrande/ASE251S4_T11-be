@@ -5,4 +5,4 @@ metadata:
   namespace: brando-lucana-agrimarket-be
 data:
   SERVER_PORT: "8080"
-  SPRING_APPLICATION_NAME: "ASE251S4_T11-be"
+  SPRING_APPLICATION_NAME: "vg-ms-agrimarket"

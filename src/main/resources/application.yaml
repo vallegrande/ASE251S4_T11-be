@@ -1,6 +1,6 @@
 spring:
   application:
-    name: ASE251S4_T11-be
+    name: vg-ms-agrimarket
   data:
     mongodb:
       uri: ${MONGODB_URI}
