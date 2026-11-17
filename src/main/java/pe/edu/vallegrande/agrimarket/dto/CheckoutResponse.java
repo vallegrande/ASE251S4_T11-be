@@ -1,0 +1,11 @@
+package pe.edu.vallegrande.agrimarket.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Value;
+
+@Value
+@AllArgsConstructor
+public class CheckoutResponse {
+    OrderWithDetailsDTO order;
+    PaymentResponse payment;
+}

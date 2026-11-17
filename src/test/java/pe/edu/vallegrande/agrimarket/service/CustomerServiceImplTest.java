@@ -1,0 +1,51 @@
+package pe.edu.vallegrande.agrimarket.service;
+
+import pe.edu.vallegrande.agrimarket.service.impl.CustomerServiceImpl;
+import pe.edu.vallegrande.agrimarket.model.mongo.Customer;
+import pe.edu.vallegrande.agrimarket.repository.mongo.CustomerRepository;
+import pe.edu.vallegrande.agrimarket.repository.mongo.StaffUserRepository;
+import jakarta.validation.Validator;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
+import reactor.test.StepVerifier;
+
+import static org.mockito.Mockito.mock;
+
+class CustomerServiceImplTest {
+
+    private final CustomerServiceImpl customerService = new CustomerServiceImpl(
+            mock(CustomerRepository.class),
+            mock(StaffUserRepository.class),
+            mock(SequenceGeneratorService.class),
+            mock(PasswordEncoder.class),
+            mock(Validator.class));
+
+    @Test
+    void rejectsUnsupportedDocumentType() {
+        Customer customer = customer("PASAPORTE", "123456789");
+
+        StepVerifier.create(customerService.create(customer))
+                .expectErrorMatches(error -> error instanceof ResponseStatusException exception
+                        && exception.getStatusCode() == HttpStatus.BAD_REQUEST)
+                .verify();
+    }
+
+    @Test
+    void rejectsDocumentNumberWithWrongLengthForType() {
+        Customer customer = customer("DNI", "123456789");
+
+        StepVerifier.create(customerService.create(customer))
+                .expectErrorMatches(error -> error instanceof ResponseStatusException exception
+                        && exception.getStatusCode() == HttpStatus.BAD_REQUEST)
+                .verify();
+    }
+
+    private Customer customer(String docType, String docNumber) {
+        return Customer.builder()
+                .docType(docType)
+                .docNumber(docNumber)
+                .build();
+    }
+}

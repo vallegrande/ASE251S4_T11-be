@@ -3,6 +3,8 @@
 Microservicio Spring Boot reactivo para la gestión de Agrimarket. Usa Java 21,
 MongoDB reactivo y SQL Server mediante R2DBC.
 
+Paquete base: `pe.edu.vallegrande.agrimarket`.
+
 ## Requisitos
 
 - Java 21

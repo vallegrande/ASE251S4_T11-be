@@ -1,0 +1,36 @@
+package pe.edu.vallegrande.agrimarket.model.sql;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Table("order")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Order {
+
+    @Id
+    private Integer orderId;
+
+    private LocalDateTime orderDate;
+    private String status;
+    private String deliveryType;
+    private String deliveryAddress;
+    private LocalDateTime deliveryDate;
+    private BigDecimal totalAmount;
+    private Integer storeId;
+    private String customerId;
+    @Column("checkout_key")
+    private String checkoutKey;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+}
