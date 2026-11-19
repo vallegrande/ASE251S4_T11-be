@@ -11,11 +11,9 @@ import pe.edu.vallegrande.agrimarket.model.sql.Order;
 import pe.edu.vallegrande.agrimarket.model.sql.OrderDetail;
 import pe.edu.vallegrande.agrimarket.model.sql.OrderStatus;
 import pe.edu.vallegrande.agrimarket.repository.mongo.CustomerRepository;
-import pe.edu.vallegrande.agrimarket.repository.mongo.ProductRepository;
 import pe.edu.vallegrande.agrimarket.repository.sql.OrderDetailRepository;
 import pe.edu.vallegrande.agrimarket.repository.sql.OrderRepository;
 import pe.edu.vallegrande.agrimarket.repository.sql.PaymentRepository;
-import pe.edu.vallegrande.agrimarket.repository.sql.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,12 +26,12 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
+    private static final String PAYMENT_STATUS_PAID = "PAID";
     private static final Set<OrderStatus> ALLOWED_TARGET_STATUSES = Set.of(
             OrderStatus.PREPARING, OrderStatus.READY_FOR_PICKUP, OrderStatus.COMPLETED);
 
@@ -41,8 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderDetailRepository orderDetailRepository;
     private final PaymentRepository paymentRepository;
     private final CustomerRepository customerRepository;
-    private final ProductRepository productRepository;
-    private final StoreRepository storeRepository;
+    private final OrderReferenceValidator orderReferenceValidator;
     private final TransactionalOperator transactionalOperator;
 
     @Override
@@ -217,7 +214,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private Mono<OrderWithDetailsDTO> ensurePaymentConfirmed(Order order, OrderStatus nextStatus) {
-        return paymentRepository.existsByOrderIdAndPaymentStatus(order.getOrderId(), "PAID")
+        return paymentRepository.existsByOrderIdAndPaymentStatus(order.getOrderId(), PAYMENT_STATUS_PAID)
                 .flatMap(isPaid -> {
                     if (!isPaid) {
                         return Mono.error(new ResponseStatusException(
@@ -232,9 +229,12 @@ public class OrderServiceImpl implements OrderService {
     private Mono<Void> validateCreateOrderRequest(CreateOrderRequest req) {
         return validateOrderStatus(req.getStatus())
                 .then(validateDeliveryType(req.getDeliveryType()))
-                .then(validateStoreExists(req.getStoreId()))
+                .then(orderReferenceValidator.validateStoreExists(req.getStoreId()))
                 .then(validateCustomerExists(req.getCustomerId()))
-                .then(validateProductsExist(req.getItems()));
+                .then(orderReferenceValidator.validateProductsExist(
+                        req.getItems() == null ? null
+                                : req.getItems().stream().map(OrderItemDTO::getProductId).toList(),
+                        "Debe registrar al menos un item en el pedido"));
     }
 
     private Mono<Void> validateOrderStatus(String status) {
@@ -249,9 +249,12 @@ public class OrderServiceImpl implements OrderService {
 
     private Mono<Void> validateUpdateOrderRequest(UpdateOrderRequest req) {
         return validateDeliveryType(req.getDeliveryType())
-                .then(validateStoreExists(req.getStoreId()))
+                .then(orderReferenceValidator.validateStoreExists(req.getStoreId()))
                 .then(validateCustomerExists(req.getCustomerId()))
-                .then(validateProductsExist(req.getItems()));
+                .then(orderReferenceValidator.validateProductsExist(
+                        req.getItems() == null ? null
+                                : req.getItems().stream().map(OrderItemDTO::getProductId).toList(),
+                        "Debe registrar al menos un item en el pedido"));
     }
 
     private Mono<Void> validateDeliveryType(String deliveryType) {
@@ -260,16 +263,6 @@ public class OrderServiceImpl implements OrderService {
                     HttpStatus.BAD_REQUEST, "deliveryType solo puede ser 'recogida'"));
         }
         return Mono.empty();
-    }
-
-    private Mono<Void> validateStoreExists(Integer storeId) {
-        if (storeId == null) {
-            return Mono.empty();
-        }
-        return storeRepository.existsById(storeId)
-                .filter(Boolean::booleanValue)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Store no existe con id: " + storeId)))
-                .then();
     }
 
     private Mono<Void> validateCustomerExists(String customerId) {
@@ -283,31 +276,6 @@ public class OrderServiceImpl implements OrderService {
                 .filter(Boolean::booleanValue)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Customer no existe con id: " + customerId)))
                 .then();
-    }
-
-    private Mono<Void> validateProductsExist(List<OrderItemDTO> items) {
-        if (items == null || items.isEmpty()) {
-            return Mono.error(new ResourceNotFoundException("Debe registrar al menos un item en el pedido"));
-        }
-        List<Long> ids;
-        try {
-            ids = items.stream()
-                    .map(i -> Long.valueOf(i.getProductId()))
-                    .distinct()
-                    .collect(Collectors.toList());
-        } catch (NumberFormatException ex) {
-            return Mono.error(new ResourceNotFoundException("Existe un productId con formato inválido en los items"));
-        }
-        return productRepository.findAllById(ids).collectList()
-                .flatMap(found -> {
-                    int expected = ids.size();
-                    int actual = found.size();
-                    if (actual != expected) {
-                        return Mono.error(new ResourceNotFoundException(
-                                "Algunos productId no existen en el catálogo (encontrados: " + actual + "/" + expected + ")"));
-                    }
-                    return Mono.empty();
-                });
     }
 
     private OrderDetail mapToOrderDetail(OrderItemDTO item, Integer orderId) {

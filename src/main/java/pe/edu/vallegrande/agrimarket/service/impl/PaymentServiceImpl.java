@@ -22,6 +22,12 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
+    private static final String PAYMENT_STATUS_PENDING = "PENDING";
+    private static final String PAYMENT_STATUS_PAID = "PAID";
+    private static final String ORDER_STATUS_PAID = "PAID";
+    private static final String ORDER_STATUS_CANCELLED = "CANCELLED";
+    private static final int INITIAL_EXPIRED_PAYMENT_COUNT = 0;
+
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
@@ -38,10 +44,10 @@ public class PaymentServiceImpl implements PaymentService {
     public Mono<PaymentResponse> confirmSimulatedPayment(Integer paymentId, String email) {
         return findOwnedPayment(paymentId, email)
                 .flatMap(payment -> {
-                    if ("PAID".equals(payment.getPaymentStatus())) {
+                    if (PAYMENT_STATUS_PAID.equals(payment.getPaymentStatus())) {
                         return Mono.just(PaymentResponse.from(payment));
                     }
-                    if (!"PENDING".equals(payment.getPaymentStatus())) {
+                    if (!PAYMENT_STATUS_PENDING.equals(payment.getPaymentStatus())) {
                         return Mono.error(new ResponseStatusException(
                                 HttpStatus.CONFLICT, "El pago ya no está pendiente"));
                     }
@@ -59,7 +65,7 @@ public class PaymentServiceImpl implements PaymentService {
                                                     : paymentRepository.findById(paymentId))
                                             .switchIfEmpty(Mono.error(new ResponseStatusException(
                                                     HttpStatus.NOT_FOUND, "Pago no encontrado"))))
-                            .flatMap(updatedPayment -> "PAID".equals(updatedPayment.getPaymentStatus())
+                            .flatMap(updatedPayment -> PAYMENT_STATUS_PAID.equals(updatedPayment.getPaymentStatus())
                                     ? Mono.just(PaymentResponse.from(updatedPayment))
                                     : Mono.error(new ResponseStatusException(
                                             HttpStatus.CONFLICT, "El pago venció o ya no está pendiente")));
@@ -69,9 +75,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Mono<Integer> expireDuePayments() {
         LocalDateTime now = LocalDateTime.now();
-        return paymentRepository.findByPaymentStatusAndExpiresAtLessThanEqual("PENDING", now)
+        return paymentRepository.findByPaymentStatusAndExpiresAtLessThanEqual(PAYMENT_STATUS_PENDING, now)
                 .concatMap(payment -> expirePayment(payment.getPaymentId()))
-                .reduce(0, Integer::sum);
+                .reduce(INITIAL_EXPIRED_PAYMENT_COUNT, Integer::sum);
     }
 
     private Mono<Payment> findOwnedPayment(Integer paymentId, String email) {
@@ -98,7 +104,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Pedido relacionado al pago no encontrado")))
                 .flatMap(order -> {
-                    order.setStatus("PAID");
+                    order.setStatus(ORDER_STATUS_PAID);
                     order.setUpdatedAt(LocalDateTime.now());
                     return orderRepository.save(order).then();
                 });
@@ -112,21 +118,29 @@ public class PaymentServiceImpl implements PaymentService {
                             if (updated == 0) {
                                 return Mono.just(0);
                             }
-                            return paymentRepository.findById(paymentId)
-                                    .flatMap(payment -> orderRepository.findById(payment.getOrderId())
-                                            .switchIfEmpty(Mono.error(new ResponseStatusException(
-                                                    HttpStatus.NOT_FOUND,
-                                                    "Pedido relacionado al pago no encontrado")))
-                                            .flatMap(order -> orderDetailRepository.findByOrderId(order.getOrderId())
-                                                    .concatMap(detail -> inventoryService.increaseStock(
-                                                            detail.getProductId(),
-                                                            order.getStoreId(),
-                                                            detail.getQuantity()))
-                                                    .then(Mono.defer(() -> {
-                                                        order.setStatus("CANCELLED");
-                                                        order.setUpdatedAt(now);
-                                                        return orderRepository.save(order).thenReturn(1);
-                                                    }))));
+                            return findOrderForExpiredPayment(paymentId)
+                                    .flatMap(order -> restoreInventory(order)
+                                            .then(cancelExpiredOrder(order, now)));
                         }));
+    }
+
+    private Mono<Order> findOrderForExpiredPayment(Integer paymentId) {
+        return paymentRepository.findById(paymentId)
+                .flatMap(payment -> orderRepository.findById(payment.getOrderId())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(
+                                HttpStatus.NOT_FOUND, "Pedido relacionado al pago no encontrado"))));
+    }
+
+    private Mono<Void> restoreInventory(Order order) {
+        return orderDetailRepository.findByOrderId(order.getOrderId())
+                .concatMap(detail -> inventoryService.increaseStock(
+                        detail.getProductId(), order.getStoreId(), detail.getQuantity()))
+                .then();
+    }
+
+    private Mono<Integer> cancelExpiredOrder(Order order, LocalDateTime now) {
+        order.setStatus(ORDER_STATUS_CANCELLED);
+        order.setUpdatedAt(now);
+        return orderRepository.save(order).thenReturn(1);
     }
 }

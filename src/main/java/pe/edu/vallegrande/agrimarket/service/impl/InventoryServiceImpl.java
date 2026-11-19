@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class InventoryServiceImpl implements InventoryService {
 
+    private static final int MINIMUM_STOCK_CHANGE_QUANTITY = 1;
+
     private final InventoryRepository inventoryRepository;
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
@@ -91,7 +93,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public Mono<Boolean> hasStock(String productId, Integer storeId, Integer quantity) {
-        if (quantity == null || quantity <= 0) {
+        if (quantity == null || quantity < MINIMUM_STOCK_CHANGE_QUANTITY) {
             return Mono.error(new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "quantity debe ser mayor que cero"));
         }
@@ -102,7 +104,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public Mono<Void> decreaseStock(String productId, Integer storeId, Integer quantity) {
-        if (quantity == null || quantity <= 0) {
+        if (quantity == null || quantity < MINIMUM_STOCK_CHANGE_QUANTITY) {
             return Mono.error(new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "quantity debe ser mayor que cero"));
         }
@@ -115,7 +117,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public Mono<Void> increaseStock(String productId, Integer storeId, Integer quantity) {
-        if (quantity == null || quantity <= 0) {
+        if (quantity == null || quantity < MINIMUM_STOCK_CHANGE_QUANTITY) {
             return Mono.error(new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "quantity debe ser mayor que cero"));
         }

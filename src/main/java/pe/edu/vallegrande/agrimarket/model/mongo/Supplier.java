@@ -45,7 +45,7 @@ public class Supplier {
     @Size(max = 255, message = "address no puede superar 255 caracteres")
     private String address;
 
-    private Ubigeo ubigeo;
+    private AdministrativeDivision ubigeo;
 
     @Size(max = ValidationLimits.MAX_NAME_LENGTH,
             message = "contactPerson no puede superar " + ValidationLimits.MAX_NAME_LENGTH + " caracteres")

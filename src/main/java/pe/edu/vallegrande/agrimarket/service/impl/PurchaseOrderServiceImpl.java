@@ -10,11 +10,9 @@ import pe.edu.vallegrande.agrimarket.exception.ResourceNotFoundException;
 import pe.edu.vallegrande.agrimarket.model.sql.PurchaseOrder;
 import pe.edu.vallegrande.agrimarket.model.sql.PurchaseOrderDetail;
 import pe.edu.vallegrande.agrimarket.model.sql.PurchaseOrderStatus;
-import pe.edu.vallegrande.agrimarket.repository.mongo.ProductRepository;
 import pe.edu.vallegrande.agrimarket.repository.mongo.SupplierRepository;
 import pe.edu.vallegrande.agrimarket.repository.sql.PurchaseOrderDetailRepository;
 import pe.edu.vallegrande.agrimarket.repository.sql.PurchaseOrderRepository;
-import pe.edu.vallegrande.agrimarket.repository.sql.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,7 +24,6 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +32,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final PurchaseOrderDetailRepository purchaseOrderDetailRepository;
     private final SupplierRepository supplierRepository;
-    private final ProductRepository productRepository;
-    private final StoreRepository storeRepository;
+    private final OrderReferenceValidator orderReferenceValidator;
     private final InventoryService inventoryService;
     private final TransactionalOperator transactionalOperator;
 
@@ -223,25 +219,21 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     }
 
     private Mono<Void> validateCreate(CreatePurchaseOrderRequest req) {
-        return validateStoreExists(req.storeId())
+        return orderReferenceValidator.validateStoreExists(req.storeId())
                 .then(validateSupplierExists(req.supplierId()))
-                .then(validateProductsExist(req.items()));
+                .then(orderReferenceValidator.validateProductsExist(
+                        req.items() == null ? null
+                                : req.items().stream().map(PurchaseOrderItemDTO::productId).toList(),
+                        "Debe registrar al menos un item en la purchase order"));
     }
 
     private Mono<Void> validateUpdate(UpdatePurchaseOrderRequest req) {
-        return validateStoreExists(req.storeId())
+        return orderReferenceValidator.validateStoreExists(req.storeId())
                 .then(validateSupplierExists(req.supplierId()))
-                .then(validateProductsExist(req.items()));
-    }
-
-    private Mono<Void> validateStoreExists(Integer storeId) {
-        if (storeId == null) {
-            return Mono.empty();
-        }
-        return storeRepository.existsById(storeId)
-                .filter(Boolean::booleanValue)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Store no existe con id: " + storeId)))
-                .then();
+                .then(orderReferenceValidator.validateProductsExist(
+                        req.items() == null ? null
+                                : req.items().stream().map(PurchaseOrderItemDTO::productId).toList(),
+                        "Debe registrar al menos un item en la purchase order"));
     }
 
     private Mono<Void> validateSupplierExists(String supplierId) {
@@ -255,31 +247,6 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 .filter(Boolean::booleanValue)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Supplier no existe con id: " + supplierId)))
                 .then();
-    }
-
-    private Mono<Void> validateProductsExist(List<PurchaseOrderItemDTO> items) {
-        if (items == null || items.isEmpty()) {
-            return Mono.error(new ResourceNotFoundException("Debe registrar al menos un item en la purchase order"));
-        }
-        List<Long> productIds;
-        try {
-            productIds = items.stream()
-                    .map(i -> Long.valueOf(i.productId()))
-                    .distinct()
-                    .collect(Collectors.toList());
-        } catch (NumberFormatException ex) {
-            return Mono.error(new ResourceNotFoundException("Existe un productId con formato inválido en los items"));
-        }
-        return productRepository.findAllById(productIds).collectList()
-                .flatMap(found -> {
-                    int expected = productIds.size();
-                    int actual = found.size();
-                    if (actual != expected) {
-                        return Mono.error(new ResourceNotFoundException(
-                                "Algunos productId no existen en el catálogo (encontrados: " + actual + "/" + expected + ")"));
-                    }
-                    return Mono.empty();
-                });
     }
 
     private PurchaseOrderDetail toDetail(PurchaseOrderItemDTO item, Integer purchaseOrderId) {

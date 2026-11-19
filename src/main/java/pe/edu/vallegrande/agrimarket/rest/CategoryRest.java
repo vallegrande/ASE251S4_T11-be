@@ -1,4 +1,4 @@
-package pe.edu.vallegrande.agrimarket.controller;
+package pe.edu.vallegrande.agrimarket.rest;
 
 import pe.edu.vallegrande.agrimarket.model.mongo.Category;
 import pe.edu.vallegrande.agrimarket.service.CategoryService;

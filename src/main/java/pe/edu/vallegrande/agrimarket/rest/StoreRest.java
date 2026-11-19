@@ -1,4 +1,4 @@
-package pe.edu.vallegrande.agrimarket.controller;
+package pe.edu.vallegrande.agrimarket.rest;
 
 import pe.edu.vallegrande.agrimarket.dto.StoreAvailabilityRequest;
 import pe.edu.vallegrande.agrimarket.dto.StoreRequest;

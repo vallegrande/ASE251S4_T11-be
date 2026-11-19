@@ -5,6 +5,9 @@ MongoDB reactivo y SQL Server mediante R2DBC.
 
 Paquete base: `pe.edu.vallegrande.agrimarket`.
 
+El código Java se organiza bajo ese paquete en `model`, `repository`, `rest` y
+`service`; `Application.java` se encuentra directamente en el paquete base.
+
 ## Requisitos
 
 - Java 21

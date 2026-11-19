@@ -1,4 +1,4 @@
-package pe.edu.vallegrande.agrimarket.controller;
+package pe.edu.vallegrande.agrimarket.rest;
 
 import pe.edu.vallegrande.agrimarket.dto.AuthResponse;
 import pe.edu.vallegrande.agrimarket.dto.CustomerRegistrationRequest;
@@ -6,10 +6,10 @@ import pe.edu.vallegrande.agrimarket.dto.CustomerRegistrationResponse;
 import pe.edu.vallegrande.agrimarket.dto.LoginRequest;
 import pe.edu.vallegrande.agrimarket.model.mongo.Customer;
 import pe.edu.vallegrande.agrimarket.model.mongo.StaffUser;
-import pe.edu.vallegrande.agrimarket.model.mongo.Ubigeo;
+import pe.edu.vallegrande.agrimarket.model.mongo.AdministrativeDivision;
 import pe.edu.vallegrande.agrimarket.repository.mongo.StaffUserRepository;
 import pe.edu.vallegrande.agrimarket.repository.mongo.CustomerRepository;
-import pe.edu.vallegrande.agrimarket.repository.mongo.UbigeoRepository;
+import pe.edu.vallegrande.agrimarket.repository.mongo.AdministrativeDivisionRepository;
 import pe.edu.vallegrande.agrimarket.security.BearerTokenService;
 import pe.edu.vallegrande.agrimarket.security.IssuedToken;
 import pe.edu.vallegrande.agrimarket.security.PasswordPolicy;
@@ -34,7 +34,7 @@ public class AuthRest {
 
     private final StaffUserRepository staffUserRepository;
     private final CustomerRepository customerRepository;
-    private final UbigeoRepository ubigeoRepository;
+    private final AdministrativeDivisionRepository administrativeDivisionRepository;
     private final CustomerService customerService;
     private final PasswordEncoder passwordEncoder;
     private final BearerTokenService bearerTokenService;
@@ -43,14 +43,14 @@ public class AuthRest {
     public AuthRest(
             StaffUserRepository staffUserRepository,
             CustomerRepository customerRepository,
-            UbigeoRepository ubigeoRepository,
+            AdministrativeDivisionRepository administrativeDivisionRepository,
             CustomerService customerService,
             PasswordEncoder passwordEncoder,
             BearerTokenService bearerTokenService,
             CartService cartService) {
         this.staffUserRepository = staffUserRepository;
         this.customerRepository = customerRepository;
-        this.ubigeoRepository = ubigeoRepository;
+        this.administrativeDivisionRepository = administrativeDivisionRepository;
         this.customerService = customerService;
         this.passwordEncoder = passwordEncoder;
         this.bearerTokenService = bearerTokenService;
@@ -112,16 +112,16 @@ public class AuthRest {
             return Mono.error(new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ya existe una cuenta con ese email o documento"));
         }
-        return ubigeoRepository.findById(request.getUbigeoId())
+        return administrativeDivisionRepository.findById(request.getUbigeoId())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "El ubigeo indicado no existe")))
-                .flatMap(ubigeo -> customerService.create(buildCustomer(request, email, ubigeo)))
+                .flatMap(division -> customerService.create(buildCustomer(request, email, division)))
                 .map(saved -> new CustomerRegistrationResponse(
                         saved.getId(), saved.getEmail(), saved.getFirstName(), saved.getLastName()));
     }
 
     private Customer buildCustomer(
-            CustomerRegistrationRequest request, String email, Ubigeo ubigeo) {
+            CustomerRegistrationRequest request, String email, AdministrativeDivision division) {
         LocalDateTime now = LocalDateTime.now();
         return Customer.builder()
                 .docType(request.getDocType().trim().toUpperCase())
@@ -131,7 +131,7 @@ public class AuthRest {
                 .email(email)
                 .phone(request.getPhone().trim())
                 .address(request.getAddress())
-                .ubigeo(ubigeo)
+                .ubigeo(division)
                 .password(request.getPassword())
                 .totalVisits(0)
                 .customerSince(LocalDate.now())
