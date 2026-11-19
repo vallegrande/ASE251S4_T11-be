@@ -66,19 +66,24 @@ public class ProductServiceImpl implements ProductService {
                                         Long.parseLong(inventory.getProductId()))
                                 .filter(product -> Boolean.TRUE.equals(product.getIsActive())
                                         && Boolean.TRUE.equals(product.getIsPublishedOnline()))
-                                .map(product -> new StorefrontProductDTO(
-                                        product.getId(),
-                                        product.getName(),
-                                        product.getActiveIngredient(),
-                                        product.getPresentation(),
-                                        product.getBasePrice(),
-                                        product.getImageUrl(),
-                                        product.getDescription(),
-                                        product.getSku(),
-                                        product.getCategoryId(),
-                                        product.getBrandId(),
-                                        storeId,
-                                        true))));
+                                .map(product -> toStorefrontProduct(product, storeId))));
+    }
+
+    private StorefrontProductDTO toStorefrontProduct(Product product, Integer storeId) {
+        StorefrontProductDTO storefrontProduct = new StorefrontProductDTO();
+        storefrontProduct.setId(product.getId());
+        storefrontProduct.setName(product.getName());
+        storefrontProduct.setActiveIngredient(product.getActiveIngredient());
+        storefrontProduct.setPresentation(product.getPresentation());
+        storefrontProduct.setBasePrice(product.getBasePrice());
+        storefrontProduct.setImageUrl(product.getImageUrl());
+        storefrontProduct.setDescription(product.getDescription());
+        storefrontProduct.setSku(product.getSku());
+        storefrontProduct.setCategoryId(product.getCategoryId());
+        storefrontProduct.setBrandId(product.getBrandId());
+        storefrontProduct.setStoreId(storeId);
+        storefrontProduct.setAvailable(true);
+        return storefrontProduct;
     }
 
     @Override
@@ -175,7 +180,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Mono<BulkImportResult> importProducts(byte[] content, String filename) {
-        return BulkImportSupport.importRows(content, filename, this::mapRow, this::create);
+        return BulkImportSupport.importRows(
+                content, filename, new BulkImportSupport.ImportPlan<>(this::mapRow, this::create));
     }
 
     private Product mapRow(Map<String, String> row) {

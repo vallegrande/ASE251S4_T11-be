@@ -69,23 +69,23 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     }
 
     private Mono<PurchaseOrderWithDetailsDTO> createPurchaseOrder(CreatePurchaseOrderRequest req) {
-        return validateInitialStatus(req.status())
+        return validateInitialStatus(req.getStatus())
                 .then(validateCreate(req))
                 .then(Mono.defer(() -> {
                     LocalDateTime now = LocalDateTime.now();
                     PurchaseOrder po = PurchaseOrder.builder()
-                            .purchaseOrderDate(req.purchaseOrderDate())
-                            .status("PENDING")
-                            .totalAmount(calculateTotal(req.items()))
-                            .supplierId(req.supplierId())
-                            .storeId(req.storeId())
-                            .notes(req.notes())
+                            .purchaseOrderDate(req.getPurchaseOrderDate())
+                            .status(PurchaseOrderStatus.PENDING.name())
+                            .totalAmount(calculateTotal(req.getItems()))
+                            .supplierId(req.getSupplierId())
+                            .storeId(req.getStoreId())
+                            .notes(req.getNotes())
                             .createdAt(now)
                             .updatedAt(now)
                             .build();
 
                     return purchaseOrderRepository.save(po)
-                            .flatMap(savedOrder -> saveOrderDetails(savedOrder, req.items()));
+                            .flatMap(savedOrder -> saveOrderDetails(savedOrder, req.getItems()));
                 }));
     }
 
@@ -94,7 +94,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         return purchaseOrderRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("PurchaseOrder no encontrado con id: " + id)))
                 .flatMap(existingPo -> validateEditable(existingPo)
-                        .then(validateUpdateStatus(req.status()))
+                        .then(validateUpdateStatus(req.getStatus()))
                         .then(validateUpdate(req))
                         .then(Mono.defer(() -> updatePurchaseOrder(id, existingPo, req)))
                 );
@@ -102,16 +102,16 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     private Mono<PurchaseOrderWithDetailsDTO> updatePurchaseOrder(
             Integer id, PurchaseOrder existingPo, UpdatePurchaseOrderRequest req) {
-        existingPo.setPurchaseOrderDate(req.purchaseOrderDate());
-        existingPo.setTotalAmount(calculateTotal(req.items()));
-        existingPo.setSupplierId(req.supplierId());
-        existingPo.setStoreId(req.storeId());
-        existingPo.setNotes(req.notes());
+        existingPo.setPurchaseOrderDate(req.getPurchaseOrderDate());
+        existingPo.setTotalAmount(calculateTotal(req.getItems()));
+        existingPo.setSupplierId(req.getSupplierId());
+        existingPo.setStoreId(req.getStoreId());
+        existingPo.setNotes(req.getNotes());
         existingPo.setUpdatedAt(LocalDateTime.now());
 
         return purchaseOrderRepository.save(existingPo)
                 .flatMap(updatedPo -> purchaseOrderDetailRepository.deleteByPurchaseOrderId(id)
-                        .then(saveOrderDetails(updatedPo, req.items())))
+                        .then(saveOrderDetails(updatedPo, req.getItems())))
                 .as(transactionalOperator::transactional);
     }
 
@@ -219,20 +219,20 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     }
 
     private Mono<Void> validateCreate(CreatePurchaseOrderRequest req) {
-        return orderReferenceValidator.validateStoreExists(req.storeId())
-                .then(validateSupplierExists(req.supplierId()))
+        return orderReferenceValidator.validateStoreExists(req.getStoreId())
+                .then(validateSupplierExists(req.getSupplierId()))
                 .then(orderReferenceValidator.validateProductsExist(
-                        req.items() == null ? null
-                                : req.items().stream().map(PurchaseOrderItemDTO::productId).toList(),
+                        req.getItems() == null ? null
+                                : req.getItems().stream().map(PurchaseOrderItemDTO::productId).toList(),
                         "Debe registrar al menos un item en la purchase order"));
     }
 
     private Mono<Void> validateUpdate(UpdatePurchaseOrderRequest req) {
-        return orderReferenceValidator.validateStoreExists(req.storeId())
-                .then(validateSupplierExists(req.supplierId()))
+        return orderReferenceValidator.validateStoreExists(req.getStoreId())
+                .then(validateSupplierExists(req.getSupplierId()))
                 .then(orderReferenceValidator.validateProductsExist(
-                        req.items() == null ? null
-                                : req.items().stream().map(PurchaseOrderItemDTO::productId).toList(),
+                        req.getItems() == null ? null
+                                : req.getItems().stream().map(PurchaseOrderItemDTO::productId).toList(),
                         "Debe registrar al menos un item en la purchase order"));
     }
 

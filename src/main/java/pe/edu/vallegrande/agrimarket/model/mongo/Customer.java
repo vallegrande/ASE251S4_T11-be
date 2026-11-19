@@ -69,7 +69,7 @@ public class Customer {
 
     @NotNull(message = "ubigeo es obligatorio")
     @Valid
-    private AdministrativeDivision ubigeo;
+    private GeographicDivision ubigeo;
 
     @NotBlank(message = "password es obligatorio al crear el cliente")
     @Size(max = 255, message = "password no puede superar los 255 caracteres")

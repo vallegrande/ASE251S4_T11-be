@@ -1,18 +1,23 @@
 package pe.edu.vallegrande.agrimarket.dto;
 
 import java.math.BigDecimal;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record StorefrontProductDTO(
-        Long id,
-        String name,
-        String activeIngredient,
-        String presentation,
-        BigDecimal basePrice,
-        String imageUrl,
-        String description,
-        String sku,
-        String categoryId,
-        String brandId,
-        Integer storeId,
-        boolean available) {
+@Data
+@NoArgsConstructor
+public class StorefrontProductDTO {
+
+    private Long id;
+    private String name;
+    private String activeIngredient;
+    private String presentation;
+    private BigDecimal basePrice;
+    private String imageUrl;
+    private String description;
+    private String sku;
+    private String categoryId;
+    private String brandId;
+    private Integer storeId;
+    private boolean available;
 }

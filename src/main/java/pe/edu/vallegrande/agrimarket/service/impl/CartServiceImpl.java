@@ -504,7 +504,7 @@ public class CartServiceImpl implements CartService {
                 .sessionToken(sessionToken)
                 .items(new ArrayList<>())
                 .totalAmount(BigDecimal.ZERO)
-                .checkoutState("OPEN")
+                .checkoutState(OPEN_CART_STATE)
                 .checkoutStartedAt(null)
                 .createdAt(now)
                 .updatedAt(now)

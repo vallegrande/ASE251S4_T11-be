@@ -22,7 +22,6 @@ public class CartRest {
         this.cartService = cartService;
     }
 
-    // Permite recuperar el carrito del cliente autenticado o el del invitado por sessionToken.
     @GetMapping
     public Mono<Cart> getCart(
             @AuthenticationPrincipal String email,
@@ -30,7 +29,6 @@ public class CartRest {
         return cartService.getActiveCart(email, sessionToken);
     }
 
-    // El invitado debe conservar y enviar X-Session-Token para mantener su carrito.
     @PostMapping("/items")
     public Mono<Cart> addItem(
             @AuthenticationPrincipal String email,

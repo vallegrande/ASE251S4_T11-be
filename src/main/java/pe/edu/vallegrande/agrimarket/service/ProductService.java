@@ -26,12 +26,12 @@ public interface ProductService {
 
     Mono<Product> updateOnlinePublication(Long id, Boolean isPublishedOnline);
 
-    /** Carga masiva desde un archivo Excel (.xlsx/.xls) o CSV. */
+    /** Imports XLSX, XLS, or CSV rows and returns per-row errors while continuing valid rows. */
     Mono<BulkImportResult> importProducts(byte[] content, String filename);
 
-    /** Exporta todos los productos a un archivo Excel (.xlsx). */
+    /** Exports the current product catalog as an XLSX workbook. */
     Mono<byte[]> exportProductsExcel();
 
-    /** Exporta todos los productos a un archivo PDF. */
+    /** Exports the current product catalog as a PDF report. */
     Mono<byte[]> exportProductsPdf();
 }

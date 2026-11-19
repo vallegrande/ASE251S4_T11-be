@@ -102,30 +102,35 @@ public class OrderServiceImpl implements OrderService {
 
     private Mono<OrderWithDetailsDTO> createOrder(CreateOrderRequest req) {
         return validateCreateOrderRequest(req)
-                .then(Mono.defer(() -> {
-                    LocalDateTime now = LocalDateTime.now();
-                    Order order = Order.builder()
-                            .orderDate(req.getOrderDate())
-                            .status(req.getStatus())
-                            .deliveryType(req.getDeliveryType())
-                            .deliveryAddress(req.getDeliveryAddress())
-                            .deliveryDate(req.getDeliveryDate())
-                            .totalAmount(calculateTotal(req.getItems()))
-                            .storeId(req.getStoreId())
-                            .customerId(req.getCustomerId())
-                            .createdAt(now)
-                            .updatedAt(now)
-                            .build();
+                .then(Mono.defer(() -> saveOrder(buildOrder(req, LocalDateTime.now()), req.getItems())));
+    }
 
-                    Mono<OrderWithDetailsDTO> flow = orderRepository.save(order)
-                            .flatMap(savedOrder -> Flux.fromIterable(req.getItems())
-                                    .map(item -> mapToOrderDetail(item, savedOrder.getOrderId()))
-                                    .flatMap(orderDetailRepository::save)
-                                    .collectList()
-                                    .map(details -> OrderWithDetailsDTO.from(savedOrder, details)));
+    private Order buildOrder(CreateOrderRequest req, LocalDateTime now) {
+        return Order.builder()
+                .orderDate(req.getOrderDate())
+                .status(req.getStatus())
+                .deliveryType(req.getDeliveryType())
+                .deliveryAddress(req.getDeliveryAddress())
+                .deliveryDate(req.getDeliveryDate())
+                .totalAmount(calculateTotal(req.getItems()))
+                .storeId(req.getStoreId())
+                .customerId(req.getCustomerId())
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+    }
 
-                    return flow;
-                }));
+    private Mono<OrderWithDetailsDTO> saveOrder(Order order, List<OrderItemDTO> items) {
+        return orderRepository.save(order)
+                .flatMap(savedOrder -> saveOrderDetails(savedOrder, items));
+    }
+
+    private Mono<OrderWithDetailsDTO> saveOrderDetails(Order order, List<OrderItemDTO> items) {
+        return Flux.fromIterable(items)
+                .map(item -> mapToOrderDetail(item, order.getOrderId()))
+                .flatMap(orderDetailRepository::save)
+                .collectList()
+                .map(details -> OrderWithDetailsDTO.from(order, details));
     }
 
     @Override
@@ -133,30 +138,31 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Order no encontrado con id: " + id)))
                 .flatMap(existingOrder -> validateUpdateOrderRequest(req)
-                        .then(Mono.defer(() -> {
-                            existingOrder.setOrderDate(req.getOrderDate());
-                            existingOrder.setDeliveryType(req.getDeliveryType());
-                            existingOrder.setDeliveryAddress(req.getDeliveryAddress());
-                            existingOrder.setDeliveryDate(req.getDeliveryDate());
-                            existingOrder.setTotalAmount(calculateTotal(req.getItems()));
-                            existingOrder.setStoreId(req.getStoreId());
-                            existingOrder.setCustomerId(req.getCustomerId());
-                            existingOrder.setUpdatedAt(LocalDateTime.now());
-
-                            Mono<OrderWithDetailsDTO> flow = Mono.just(existingOrder)
-                                    .flatMap(orderRepository::save)
-                                    .flatMap(savedOrder -> orderDetailRepository.deleteByOrderId(id)
-                                            .then(Mono.just(savedOrder))
-                                    )
-                                    .flatMap(savedOrder -> Flux.fromIterable(req.getItems())
-                                            .map(item -> mapToOrderDetail(item, savedOrder.getOrderId()))
-                                            .flatMap(orderDetailRepository::save)
-                                            .collectList()
-                                            .map(details -> OrderWithDetailsDTO.from(savedOrder, details)));
-
-                            return transactionalOperator.transactional(flow);
-                        }))
+                        .then(Mono.defer(() -> updateOrder(existingOrder, req)))
                 );
+    }
+
+    private Mono<OrderWithDetailsDTO> updateOrder(Order order, UpdateOrderRequest req) {
+        applyOrderUpdates(order, req);
+        return transactionalOperator.transactional(
+                orderRepository.save(order)
+                        .flatMap(savedOrder -> replaceOrderDetails(savedOrder, req.getItems())));
+    }
+
+    private void applyOrderUpdates(Order order, UpdateOrderRequest req) {
+        order.setOrderDate(req.getOrderDate());
+        order.setDeliveryType(req.getDeliveryType());
+        order.setDeliveryAddress(req.getDeliveryAddress());
+        order.setDeliveryDate(req.getDeliveryDate());
+        order.setTotalAmount(calculateTotal(req.getItems()));
+        order.setStoreId(req.getStoreId());
+        order.setCustomerId(req.getCustomerId());
+        order.setUpdatedAt(LocalDateTime.now());
+    }
+
+    private Mono<OrderWithDetailsDTO> replaceOrderDetails(Order order, List<OrderItemDTO> items) {
+        return orderDetailRepository.deleteByOrderId(order.getOrderId())
+                .then(saveOrderDetails(order, items));
     }
 
     @Override

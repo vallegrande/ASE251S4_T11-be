@@ -17,7 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdministrativeDivision {
+public class GeographicDivision {
 
     @Id
     @NotNull(message = "ubigeo.id es obligatorio")

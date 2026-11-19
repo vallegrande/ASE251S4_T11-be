@@ -4,7 +4,7 @@ import pe.edu.vallegrande.agrimarket.service.*;
 import pe.edu.vallegrande.agrimarket.dto.StoreRequest;
 import pe.edu.vallegrande.agrimarket.exception.ResourceNotFoundException;
 import pe.edu.vallegrande.agrimarket.model.sql.Store;
-import pe.edu.vallegrande.agrimarket.repository.mongo.AdministrativeDivisionRepository;
+import pe.edu.vallegrande.agrimarket.repository.mongo.GeographicDivisionRepository;
 import pe.edu.vallegrande.agrimarket.repository.sql.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
-    private final AdministrativeDivisionRepository administrativeDivisionRepository;
+    private final GeographicDivisionRepository geographicDivisionRepository;
 
     @Override
     public Flux<Store> findAll() {
@@ -46,7 +46,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public Mono<Store> create(StoreRequest request) {
-        return validateAdministrativeDivision(request.getUbigeoId())
+        return validateGeographicDivision(request.getUbigeoId())
                 .then(Mono.defer(() -> {
                     LocalDateTime now = LocalDateTime.now();
                     Store store = Store.builder()
@@ -64,7 +64,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public Mono<Store> update(Integer storeId, StoreRequest request) {
-        return validateAdministrativeDivision(request.getUbigeoId())
+        return validateGeographicDivision(request.getUbigeoId())
                 .then(findExistingStore(storeId))
                 .flatMap(store -> {
                     store.setStoreName(request.getStoreName().trim());
@@ -101,11 +101,11 @@ public class StoreServiceImpl implements StoreService {
                         "Store no encontrado con id: " + storeId)));
     }
 
-    private Mono<Void> validateAdministrativeDivision(Integer divisionId) {
+    private Mono<Void> validateGeographicDivision(Integer divisionId) {
         if (divisionId == null) {
             return Mono.empty();
         }
-        return administrativeDivisionRepository.findById(divisionId.longValue())
+        return geographicDivisionRepository.findById(divisionId.longValue())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "El ubigeo indicado no existe")))
                 .then();

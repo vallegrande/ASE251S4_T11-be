@@ -15,7 +15,6 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfig = new CorsConfiguration();
 
-        // Permitir cualquier origen para evitar bloqueos en la nube
         corsConfig.setAllowedOrigins(List.of("*"));
 
         corsConfig.setAllowedMethods(List.of(
@@ -27,7 +26,8 @@ public class CorsConfig {
                 "Authorization", "Content-Type", "Accept", "Origin"
         ));
 
-        corsConfig.setAllowCredentials(false); // Debe ser false si usas "*"
+        // Wildcard origins require credentials to remain disabled.
+        corsConfig.setAllowCredentials(false);
         corsConfig.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =

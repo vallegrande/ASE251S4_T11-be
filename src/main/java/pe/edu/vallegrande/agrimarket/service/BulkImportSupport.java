@@ -22,8 +22,7 @@ public final class BulkImportSupport {
     public static <T> Mono<BulkImportResult> importRows(
             byte[] content,
             String filename,
-            Function<Map<String, String>, T> rowMapper,
-            Function<T, Mono<?>> saveRow) {
+            ImportPlan<T> plan) {
         return Mono.fromCallable(() -> TabularFileReader.read(content, filename))
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMapMany(Flux::fromIterable)
@@ -31,8 +30,7 @@ public final class BulkImportSupport {
                 .concatMap(indexedRow -> importRow(
                         (int) (indexedRow.getT1() + FIRST_DATA_ROW_NUMBER),
                         indexedRow.getT2(),
-                        rowMapper,
-                        saveRow))
+                        plan))
                 .collectList()
                 .map(BulkImportSupport::summarize);
     }
@@ -40,15 +38,14 @@ public final class BulkImportSupport {
     private static <T> Mono<Optional<BulkImportResult.RowError>> importRow(
             int rowNumber,
             Map<String, String> row,
-            Function<Map<String, String>, T> rowMapper,
-            Function<T, Mono<?>> saveRow) {
+            ImportPlan<T> plan) {
         T value;
         try {
-            value = rowMapper.apply(row);
+            value = plan.rowMapper().apply(row);
         } catch (IllegalArgumentException exception) {
             return Mono.just(Optional.of(rowError(rowNumber, exception.getMessage())));
         }
-        return saveRow.apply(value)
+        return plan.saveRow().apply(value)
                 .thenReturn(Optional.<BulkImportResult.RowError>empty())
                 .onErrorResume(error -> Mono.just(Optional.of(rowError(rowNumber, reason(error)))));
     }
@@ -77,5 +74,10 @@ public final class BulkImportSupport {
             return exception.getReason();
         }
         return error.getMessage() != null ? error.getMessage() : error.getClass().getSimpleName();
+    }
+
+    public record ImportPlan<T>(
+            Function<Map<String, String>, T> rowMapper,
+            Function<T, Mono<?>> saveRow) {
     }
 }

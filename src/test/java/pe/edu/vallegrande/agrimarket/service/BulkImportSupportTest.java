@@ -18,10 +18,11 @@ class BulkImportSupportTest {
         StepVerifier.create(BulkImportSupport.importRows(
                         content,
                         "items.csv",
+                new BulkImportSupport.ImportPlan<>(
                         this::mapName,
                         name -> "save-error".equals(name)
                                 ? Mono.error(new IllegalStateException("Save failed"))
-                                : Mono.just(name)))
+                                : Mono.just(name))))
                 .assertNext(result -> {
                     assertEquals(1, result.getImported());
                     assertEquals(2, result.getFailed());

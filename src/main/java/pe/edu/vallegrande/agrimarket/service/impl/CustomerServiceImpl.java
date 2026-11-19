@@ -4,7 +4,7 @@ import pe.edu.vallegrande.agrimarket.service.*;
 import pe.edu.vallegrande.agrimarket.dto.BulkImportResult;
 import pe.edu.vallegrande.agrimarket.exception.ResourceNotFoundException;
 import pe.edu.vallegrande.agrimarket.model.mongo.Customer;
-import pe.edu.vallegrande.agrimarket.model.mongo.AdministrativeDivision;
+import pe.edu.vallegrande.agrimarket.model.mongo.GeographicDivision;
 import pe.edu.vallegrande.agrimarket.repository.mongo.CustomerRepository;
 import pe.edu.vallegrande.agrimarket.repository.mongo.StaffUserRepository;
 import pe.edu.vallegrande.agrimarket.security.PasswordPolicy;
@@ -247,7 +247,8 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Mono<BulkImportResult> importCustomers(byte[] content, String filename) {
-        return BulkImportSupport.importRows(content, filename, this::mapRow, this::create);
+        return BulkImportSupport.importRows(
+                content, filename, new BulkImportSupport.ImportPlan<>(this::mapRow, this::create));
     }
 
     private Customer mapRow(Map<String, String> row) {
@@ -265,7 +266,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .email(email)
                 .phone(ValueParser.value(row, "phone", "telefono"))
                 .address(ValueParser.value(row, "address", "direccion"))
-                .ubigeo(mapAdministrativeDivision(row))
+                .ubigeo(mapGeographicDivision(row))
                 .password(password(row))
                 .totalVisits(ValueParser.parseInteger(
                         ValueParser.value(row, "totalvisits", "totalvisitas"), 0))
@@ -280,7 +281,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customer;
     }
 
-    private AdministrativeDivision mapAdministrativeDivision(Map<String, String> row) {
+    private GeographicDivision mapGeographicDivision(Map<String, String> row) {
         String idValue = ValueParser.required(row, "ubigeoId", "ubigeoid", "idubigeo");
         Long id;
         try {
@@ -295,7 +296,7 @@ public class CustomerServiceImpl implements CustomerService {
             throw new IllegalArgumentException(
                     "Si registra ubigeoId debe completar department, province y district");
         }
-        return AdministrativeDivision.builder()
+        return GeographicDivision.builder()
                 .id(id)
                 .department(department)
                 .province(province)
@@ -342,7 +343,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private String[] toExportRow(Customer customer) {
-        AdministrativeDivision division = customer.getUbigeo();
+        GeographicDivision division = customer.getUbigeo();
         return new String[] {
                 text(customer.getId()),
                 text(customer.getDocType()),

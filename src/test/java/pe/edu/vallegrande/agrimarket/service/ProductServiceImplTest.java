@@ -49,19 +49,7 @@ class ProductServiceImplTest {
         when(productRepository.findById(14L)).thenReturn(Mono.just(product(14L, false, true)));
 
         StepVerifier.create(productService.findStorefrontProducts(7))
-                .expectNext(new StorefrontProductDTO(
-                        11L,
-                        "Producto 11",
-                        null,
-                        "Presentación",
-                        BigDecimal.TEN,
-                        null,
-                        null,
-                        "SKU-11",
-                        "1",
-                        "2",
-                        7,
-                        true))
+                .expectNext(storefrontProduct())
                 .verifyComplete();
 
         verify(productRepository, never()).findById(12L);
@@ -98,5 +86,19 @@ class ProductServiceImplTest {
                 .isActive(active)
                 .isPublishedOnline(publishedOnline)
                 .build();
+    }
+
+    private StorefrontProductDTO storefrontProduct() {
+        StorefrontProductDTO product = new StorefrontProductDTO();
+        product.setId(11L);
+        product.setName("Producto 11");
+        product.setPresentation("Presentación");
+        product.setBasePrice(BigDecimal.TEN);
+        product.setSku("SKU-11");
+        product.setCategoryId("1");
+        product.setBrandId("2");
+        product.setStoreId(7);
+        product.setAvailable(true);
+        return product;
     }
 }

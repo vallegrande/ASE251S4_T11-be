@@ -29,13 +29,11 @@ public class OrderRest {
         this.orderService = orderService;
     }
 
-    // ADMIN/VENDEDOR: lista todos los pedidos para gestionarlos desde la tienda.
     @GetMapping("/manage")
     public Flux<OrderWithDetailsDTO> findAllForManagement() {
         return orderService.findAllWithDetails();
     }
 
-    // ADMIN/VENDEDOR: consulta cualquier pedido, aunque pertenezca a otro cliente.
     @GetMapping("/manage/{id}")
     public Mono<ResponseEntity<OrderWithDetailsDTO>> findByIdForManagement(@PathVariable Integer id) {
         return orderService.findByIdWithDetails(id)
@@ -43,13 +41,11 @@ public class OrderRest {
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 
-    // CLIENTE: solo lista los pedidos del cliente autenticado.
     @GetMapping
     public Flux<OrderWithDetailsDTO> findAll(@AuthenticationPrincipal String email) {
         return orderService.findByCustomerEmail(email);
     }
 
-    // CLIENTE: solo consulta el pedido si pertenece al cliente autenticado.
     @GetMapping("/{id}")
     public Mono<ResponseEntity<OrderWithDetailsDTO>> findById(
             @PathVariable Integer id,
@@ -64,7 +60,7 @@ public class OrderRest {
         return orderService.create(req);
     }
 
-    // ADMIN/VENDEDOR: registra un lote completo; si una orden falla, se revierte todo el lote.
+    // Keep batch creation atomic so one invalid order rolls back the full batch.
     @PostMapping("/batch")
     public Mono<List<OrderWithDetailsDTO>> createBatch(
             @RequestBody
@@ -80,7 +76,6 @@ public class OrderRest {
         return orderService.update(id, req);
     }
 
-    // ADMIN/VENDEDOR: avanza el estado respetando el flujo permitido del pedido.
     @PatchMapping("/{id}/status")
     public Mono<OrderWithDetailsDTO> updateStatus(
             @PathVariable Integer id,

@@ -4,29 +4,33 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record CreatePurchaseOrderRequest(
-        @NotNull(message = "purchaseOrderDate es obligatorio")
-        LocalDateTime purchaseOrderDate,
+@Data
+@NoArgsConstructor
+public class CreatePurchaseOrderRequest {
 
-        @NotBlank(message = "status es obligatorio")
-        String status,
+    @NotNull(message = "purchaseOrderDate es obligatorio")
+    private LocalDateTime purchaseOrderDate;
 
-        BigDecimal totalAmount,
+    @NotBlank(message = "status es obligatorio")
+    private String status;
 
-        @NotBlank(message = "supplierId es obligatorio")
-        String supplierId,
+    private BigDecimal totalAmount;
 
-        Integer storeId,
+    @NotBlank(message = "supplierId es obligatorio")
+    private String supplierId;
 
-        String notes,
+    private Integer storeId;
 
-        @Valid
-        @NotEmpty(message = "items no puede estar vacío")
-        List<PurchaseOrderItemDTO> items
-) {
+    private String notes;
+
+    @Valid
+    @NotEmpty(message = "items no puede estar vacío")
+    private List<PurchaseOrderItemDTO> items;
 }
