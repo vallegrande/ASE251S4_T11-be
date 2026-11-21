@@ -28,6 +28,12 @@ public class OrderReferenceValidator {
                 .then();
     }
 
+    public Mono<Void> validateStoreAndProducts(
+            Integer storeId, Collection<String> productIds, String emptyItemsMessage) {
+        return validateStoreExists(storeId)
+                .then(validateProductsExist(productIds, emptyItemsMessage));
+    }
+
     public Mono<Void> validateProductsExist(Collection<String> productIds, String emptyItemsMessage) {
         if (productIds == null || productIds.isEmpty()) {
             return Mono.error(new ResourceNotFoundException(emptyItemsMessage));

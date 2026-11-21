@@ -21,12 +21,13 @@ public interface CustomerService {
 
     Mono<Customer> restore(Long id);
 
-    /** Carga masiva desde un archivo Excel (.xlsx/.xls) o CSV. */
     Mono<BulkImportResult> importCustomers(byte[] content, String filename);
 
-    /** Exporta todos los clientes a un archivo Excel (.xlsx). */
     Mono<byte[]> exportCustomersExcel();
 
-    /** Exporta todos los clientes a un archivo PDF. */
+    Mono<byte[]> exportCustomersExcel(Boolean isActive);
+
     Mono<byte[]> exportCustomersPdf();
+
+    Mono<byte[]> exportCustomersPdf(Boolean isActive);
 }

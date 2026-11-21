@@ -109,6 +109,11 @@ public class CartServiceImpl implements CartService {
 
     private Mono<Cart> addProductToCart(Cart cart, Product product, String productId, Integer quantity) {
         ensureCartIsOpen(cart);
+        addOrUpdateCartItem(cart, product, productId, quantity);
+        return saveUpdatedCart(cart);
+    }
+
+    private void addOrUpdateCartItem(Cart cart, Product product, String productId, Integer quantity) {
         CartItem existing = cart.getItems().stream()
                 .filter(item -> item.getProductId().equals(productId))
                 .findFirst().orElse(null);
@@ -123,6 +128,9 @@ public class CartServiceImpl implements CartService {
         } else {
             updateExistingCartItem(existing, product, quantity);
         }
+    }
+
+    private Mono<Cart> saveUpdatedCart(Cart cart) {
         updateCartTotals(cart);
         return cartRepository.save(cart);
     }

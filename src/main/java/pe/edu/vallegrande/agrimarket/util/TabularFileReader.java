@@ -96,14 +96,12 @@ public final class TabularFileReader {
                      .parse(reader)) {
             List<Map<String, String>> rows = new ArrayList<>();
             for (CSVRecord record : parser) {
-                Map<String, String> raw;
-                try {
-                    raw = record.toMap();
-                } catch (IllegalStateException e) {
-                    // Skip records that do not match the header shape.
-                    continue;
+                if (!record.isConsistent()) {
+                    throw new IllegalArgumentException(
+                            "La fila CSV " + record.getRecordNumber()
+                                    + " no tiene la misma cantidad de columnas que la cabecera");
                 }
-                Map<String, String> normalized = normalize(raw);
+                Map<String, String> normalized = normalize(record.toMap());
                 if (!isEmptyRow(normalized)) {
                     rows.add(normalized);
                 }

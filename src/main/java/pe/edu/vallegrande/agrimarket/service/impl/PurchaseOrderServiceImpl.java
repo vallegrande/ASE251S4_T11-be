@@ -219,21 +219,20 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     }
 
     private Mono<Void> validateCreate(CreatePurchaseOrderRequest req) {
-        return orderReferenceValidator.validateStoreExists(req.getStoreId())
-                .then(validateSupplierExists(req.getSupplierId()))
-                .then(orderReferenceValidator.validateProductsExist(
-                        req.getItems() == null ? null
-                                : req.getItems().stream().map(PurchaseOrderItemDTO::productId).toList(),
-                        "Debe registrar al menos un item en la purchase order"));
+        return validateReferences(req.getStoreId(), req.getSupplierId(), req.getItems());
     }
 
     private Mono<Void> validateUpdate(UpdatePurchaseOrderRequest req) {
-        return orderReferenceValidator.validateStoreExists(req.getStoreId())
-                .then(validateSupplierExists(req.getSupplierId()))
-                .then(orderReferenceValidator.validateProductsExist(
-                        req.getItems() == null ? null
-                                : req.getItems().stream().map(PurchaseOrderItemDTO::productId).toList(),
-                        "Debe registrar al menos un item en la purchase order"));
+        return validateReferences(req.getStoreId(), req.getSupplierId(), req.getItems());
+    }
+
+    private Mono<Void> validateReferences(
+            Integer storeId, String supplierId, List<PurchaseOrderItemDTO> items) {
+        return orderReferenceValidator.validateStoreAndProducts(
+                        storeId,
+                        items == null ? null : items.stream().map(PurchaseOrderItemDTO::productId).toList(),
+                        "Debe registrar al menos un item en la purchase order")
+                .then(validateSupplierExists(supplierId));
     }
 
     private Mono<Void> validateSupplierExists(String supplierId) {

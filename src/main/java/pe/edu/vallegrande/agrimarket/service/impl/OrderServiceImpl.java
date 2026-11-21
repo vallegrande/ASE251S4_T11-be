@@ -235,9 +235,9 @@ public class OrderServiceImpl implements OrderService {
     private Mono<Void> validateCreateOrderRequest(CreateOrderRequest req) {
         return validateOrderStatus(req.getStatus())
                 .then(validateDeliveryType(req.getDeliveryType()))
-                .then(orderReferenceValidator.validateStoreExists(req.getStoreId()))
                 .then(validateCustomerExists(req.getCustomerId()))
-                .then(orderReferenceValidator.validateProductsExist(
+                .then(orderReferenceValidator.validateStoreAndProducts(
+                        req.getStoreId(),
                         req.getItems() == null ? null
                                 : req.getItems().stream().map(OrderItemDTO::getProductId).toList(),
                         "Debe registrar al menos un item en el pedido"));
@@ -255,9 +255,9 @@ public class OrderServiceImpl implements OrderService {
 
     private Mono<Void> validateUpdateOrderRequest(UpdateOrderRequest req) {
         return validateDeliveryType(req.getDeliveryType())
-                .then(orderReferenceValidator.validateStoreExists(req.getStoreId()))
                 .then(validateCustomerExists(req.getCustomerId()))
-                .then(orderReferenceValidator.validateProductsExist(
+                .then(orderReferenceValidator.validateStoreAndProducts(
+                        req.getStoreId(),
                         req.getItems() == null ? null
                                 : req.getItems().stream().map(OrderItemDTO::getProductId).toList(),
                         "Debe registrar al menos un item en el pedido"));

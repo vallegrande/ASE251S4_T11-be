@@ -22,7 +22,6 @@ public class InventoryRest {
         this.inventoryService = inventoryService;
     }
 
-    // ADMIN/VENDEDOR: consulta el stock registrado por producto y tienda.
     @GetMapping
     public Flux<Inventory> findAll(
             @RequestParam(required = false) String productId,
@@ -35,13 +34,11 @@ public class InventoryRest {
         return inventoryService.findById(id);
     }
 
-    // ADMIN/VENDEDOR: registra un stock inicial para un producto en una tienda activa.
     @PostMapping
     public Mono<Inventory> create(@Valid @RequestBody InventoryRequest request) {
         return inventoryService.create(toInventory(request));
     }
 
-    // ADMIN/VENDEDOR: modifica los datos y cantidades del registro de inventario.
     @PutMapping("/{id}")
     public Mono<Inventory> update(@PathVariable Integer id, @Valid @RequestBody InventoryRequest request) {
         return inventoryService.update(id, toInventory(request));

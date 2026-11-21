@@ -1,16 +1,16 @@
 package pe.edu.vallegrande.agrimarket.service.impl;
 
-import pe.edu.vallegrande.agrimarket.service.*;
 import pe.edu.vallegrande.agrimarket.dto.BulkImportResult;
 import pe.edu.vallegrande.agrimarket.exception.ResourceNotFoundException;
 import pe.edu.vallegrande.agrimarket.model.mongo.Customer;
-import pe.edu.vallegrande.agrimarket.model.mongo.GeographicDivision;
 import pe.edu.vallegrande.agrimarket.repository.mongo.CustomerRepository;
 import pe.edu.vallegrande.agrimarket.repository.mongo.StaffUserRepository;
 import pe.edu.vallegrande.agrimarket.security.PasswordPolicy;
-import pe.edu.vallegrande.agrimarket.util.ExcelGenerator;
-import pe.edu.vallegrande.agrimarket.util.PdfGenerator;
-import pe.edu.vallegrande.agrimarket.util.ValueParser;
+import pe.edu.vallegrande.agrimarket.service.BulkImportSupport;
+import pe.edu.vallegrande.agrimarket.service.CustomerExportService;
+import pe.edu.vallegrande.agrimarket.service.CustomerImportMapper;
+import pe.edu.vallegrande.agrimarket.service.CustomerService;
+import pe.edu.vallegrande.agrimarket.service.SequenceGeneratorService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,17 +31,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
 
+    private static final int DEFAULT_TOTAL_VISITS = 0;
+    private static final int DNI_DOCUMENT_NUMBER_LENGTH = 8;
+    private static final int RUC_DOCUMENT_NUMBER_LENGTH = 11;
+    private static final int CE_DOCUMENT_NUMBER_LENGTH = 9;
+    private static final String DOCUMENT_NUMBER_PATTERN_TEMPLATE = "\\d{%d}";
+    private static final String REQUIRED_DOCUMENT_ERROR = "docType y docNumber son obligatorios";
+    private static final String UNSUPPORTED_DOCUMENT_TYPE_ERROR = "docType debe ser DNI, RUC o CE";
+
     private final CustomerRepository customerRepository;
     private final StaffUserRepository staffUserRepository;
     private final SequenceGeneratorService sequenceGeneratorService;
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
-
-    private static final String DEFAULT_IMPORT_PASSWORD = "Importado2025.";
-    private static final String[] EXPORT_HEADERS = {
-            "id", "docType", "docNumber", "firstName", "lastName", "email",
-            "phone", "address", "department", "province", "district", "customerSince", "isActive"
-    };
+    private final CustomerImportMapper customerImportMapper;
+    private final CustomerExportService customerExportService;
 
     @Override
     public Flux<Customer> findAll() {
@@ -101,7 +102,7 @@ public class CustomerServiceImpl implements CustomerService {
                         customer.setIsActive(true);
                     }
                     if (customer.getTotalVisits() == null) {
-                        customer.setTotalVisits(0);
+                        customer.setTotalVisits(DEFAULT_TOTAL_VISITS);
                     }
                     customer.setPassword(passwordEncoder.encode(customer.getPassword()));
                     return customerRepository.save(customer);
@@ -189,23 +190,34 @@ public class CustomerServiceImpl implements CustomerService {
 
     private String documentValidationError(String docType, String docNumber) {
         if (docType == null || docNumber == null) {
-            return "docType y docNumber son obligatorios";
+            return REQUIRED_DOCUMENT_ERROR;
         }
         String normalizedType = docType.trim().toUpperCase();
         String normalizedNumber = docNumber.trim();
         boolean valid = switch (normalizedType) {
-            case "DNI" -> normalizedNumber.matches("\\d{8}");
-            case "RUC" -> normalizedNumber.matches("\\d{11}");
-            case "CE" -> normalizedNumber.matches("\\d{9}");
+            case "DNI" -> hasExpectedDocumentLength(normalizedNumber, DNI_DOCUMENT_NUMBER_LENGTH);
+            case "RUC" -> hasExpectedDocumentLength(normalizedNumber, RUC_DOCUMENT_NUMBER_LENGTH);
+            case "CE" -> hasExpectedDocumentLength(normalizedNumber, CE_DOCUMENT_NUMBER_LENGTH);
             default -> false;
         };
-        if (valid) return null;
+        if (valid) {
+            return null;
+        }
         return switch (normalizedType) {
-            case "DNI" -> "DNI debe tener exactamente 8 dígitos";
-            case "RUC" -> "RUC debe tener exactamente 11 dígitos";
-            case "CE" -> "CE debe tener exactamente 9 dígitos";
-            default -> "docType debe ser DNI, RUC o CE";
+            case "DNI" -> documentLengthError("DNI", DNI_DOCUMENT_NUMBER_LENGTH);
+            case "RUC" -> documentLengthError("RUC", RUC_DOCUMENT_NUMBER_LENGTH);
+            case "CE" -> documentLengthError("CE", CE_DOCUMENT_NUMBER_LENGTH);
+            default -> UNSUPPORTED_DOCUMENT_TYPE_ERROR;
         };
+    }
+
+    private String documentLengthError(String documentType, int expectedLength) {
+        return documentType + " debe tener exactamente " + expectedLength + " dígitos";
+    }
+
+    private boolean hasExpectedDocumentLength(String documentNumber, int expectedLength) {
+        String pattern = String.format(Locale.ROOT, DOCUMENT_NUMBER_PATTERN_TEMPLATE, expectedLength);
+        return documentNumber.matches(pattern);
     }
 
     private Mono<Boolean> emailIsInUse(String email, Long excludingCustomerId) {
@@ -241,127 +253,29 @@ public class CustomerServiceImpl implements CustomerService {
                 });
     }
 
-    // ------------------------------------------------------------------
-    // Carga masiva (importacion) y exportacion
-    // ------------------------------------------------------------------
-
     @Override
     public Mono<BulkImportResult> importCustomers(byte[] content, String filename) {
         return BulkImportSupport.importRows(
-                content, filename, new BulkImportSupport.ImportPlan<>(this::mapRow, this::create));
-    }
-
-    private Customer mapRow(Map<String, String> row) {
-        String docType = ValueParser.required(row, "docType", "doctype", "tipodocumento");
-        String docNumber = ValueParser.required(row, "docNumber", "docnumber", "numerodocumento");
-        String firstName = ValueParser.required(row, "firstName", "firstname", "nombres");
-        String lastName = ValueParser.required(row, "lastName", "lastname", "apellidos");
-        String email = ValueParser.required(row, "email", "email", "correo");
-
-        Customer.CustomerBuilder builder = Customer.builder()
-                .docType(docType)
-                .docNumber(docNumber)
-                .firstName(firstName)
-                .lastName(lastName)
-                .email(email)
-                .phone(ValueParser.value(row, "phone", "telefono"))
-                .address(ValueParser.value(row, "address", "direccion"))
-                .ubigeo(mapGeographicDivision(row))
-                .password(password(row))
-                .totalVisits(ValueParser.parseInteger(
-                        ValueParser.value(row, "totalvisits", "totalvisitas"), 0))
-                .lastPurchaseDate(ValueParser.parseDate(
-                        ValueParser.value(row, "lastpurchasedate", "ultimacompra")))
-                .customerSince(defaultCustomerSince(row))
-                .notes(ValueParser.value(row, "notes", "notas", "observaciones"))
-                .isActive(ValueParser.parseBoolean(ValueParser.value(row, "isactive", "activo"), Boolean.TRUE));
-
-        Customer customer = builder.build();
-        validate(customer);
-        return customer;
-    }
-
-    private GeographicDivision mapGeographicDivision(Map<String, String> row) {
-        String idValue = ValueParser.required(row, "ubigeoId", "ubigeoid", "idubigeo");
-        Long id;
-        try {
-            id = Long.valueOf(idValue);
-        } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException("ubigeoId debe ser un número entero");
-        }
-        String department = ValueParser.value(row, "department", "departamento");
-        String province = ValueParser.value(row, "province", "provincia");
-        String district = ValueParser.value(row, "district", "distrito");
-        if (department == null || province == null || district == null) {
-            throw new IllegalArgumentException(
-                    "Si registra ubigeoId debe completar department, province y district");
-        }
-        return GeographicDivision.builder()
-                .id(id)
-                .department(department)
-                .province(province)
-                .district(district)
-                .build();
-    }
-
-    private String password(Map<String, String> row) {
-        String value = ValueParser.value(row, "password", "clave", "contrasena", "contraseña");
-        return value == null ? DEFAULT_IMPORT_PASSWORD : value;
-    }
-
-    private LocalDate defaultCustomerSince(Map<String, String> row) {
-        LocalDate parsed = ValueParser.parseDate(ValueParser.value(row, "customersince", "clientedesde"));
-        return parsed != null ? parsed : LocalDate.now();
-    }
-
-    private void validate(Customer customer) {
-        Set<ConstraintViolation<Customer>> violations = validator.validate(customer);
-        if (!violations.isEmpty()) {
-            String message = violations.stream()
-                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
-                    .collect(Collectors.joining(" | "));
-            throw new IllegalArgumentException(message);
-        }
+                content, filename, new BulkImportSupport.ImportPlan<>(customerImportMapper::mapRow, this::create));
     }
 
     @Override
     public Mono<byte[]> exportCustomersExcel() {
-        return customerRepository.findAll()
-                .map(this::toExportRow)
-                .collectList()
-                .flatMap(rows -> Mono.fromCallable(() -> ExcelGenerator.write("Clientes", EXPORT_HEADERS, rows))
-                        .subscribeOn(Schedulers.boundedElastic()));
+        return exportCustomersExcel(null);
+    }
+
+    @Override
+    public Mono<byte[]> exportCustomersExcel(Boolean isActive) {
+        return customerExportService.exportExcel(isActive);
     }
 
     @Override
     public Mono<byte[]> exportCustomersPdf() {
-        return customerRepository.findAll()
-                .map(this::toExportRow)
-                .collectList()
-                .flatMap(rows -> Mono.fromCallable(() -> PdfGenerator.write("Reporte de Clientes", EXPORT_HEADERS, rows))
-                        .subscribeOn(Schedulers.boundedElastic()));
+        return exportCustomersPdf(null);
     }
 
-    private String[] toExportRow(Customer customer) {
-        GeographicDivision division = customer.getUbigeo();
-        return new String[] {
-                text(customer.getId()),
-                text(customer.getDocType()),
-                text(customer.getDocNumber()),
-                text(customer.getFirstName()),
-                text(customer.getLastName()),
-                text(customer.getEmail()),
-                text(customer.getPhone()),
-                text(customer.getAddress()),
-                division != null ? text(division.getDepartment()) : "",
-                division != null ? text(division.getProvince()) : "",
-                division != null ? text(division.getDistrict()) : "",
-                text(customer.getCustomerSince()),
-                text(customer.getIsActive())
-        };
-    }
-
-    private String text(Object value) {
-        return value == null ? "" : value.toString();
+    @Override
+    public Mono<byte[]> exportCustomersPdf(Boolean isActive) {
+        return customerExportService.exportPdf(isActive);
     }
 }

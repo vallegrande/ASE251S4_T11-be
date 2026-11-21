@@ -76,21 +76,30 @@ public class CustomerRest {
     }
 
     @GetMapping("/export/excel")
-    public Mono<ResponseEntity<Resource>> exportExcel() {
-        return customerService.exportCustomersExcel()
+    public Mono<ResponseEntity<Resource>> exportExcel(
+            @RequestParam(name = "isActive", required = false) Boolean isActive) {
+        return customerService.exportCustomersExcel(isActive)
                 .map(bytes -> ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"clientes.xlsx\"")
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                                "attachment; filename=\"" + exportFilename(isActive, "xlsx") + "\"")
                         .contentType(XLSX)
                         .body(new ByteArrayResource(bytes)));
     }
 
     @GetMapping("/export/pdf")
-    public Mono<ResponseEntity<Resource>> exportPdf() {
-        return customerService.exportCustomersPdf()
+    public Mono<ResponseEntity<Resource>> exportPdf(
+            @RequestParam(name = "isActive", required = false) Boolean isActive) {
+        return customerService.exportCustomersPdf(isActive)
                 .map(bytes -> ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"clientes.pdf\"")
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                                "attachment; filename=\"" + exportFilename(isActive, "pdf") + "\"")
                         .contentType(MediaType.APPLICATION_PDF)
                         .body(new ByteArrayResource(bytes)));
+    }
+
+    private String exportFilename(Boolean isActive, String extension) {
+        String status = isActive == null ? "" : isActive ? "-activos" : "-inactivos";
+        return "clientes" + status + "." + extension;
     }
 
     private Mono<byte[]> readBytes(FilePart file) {
